@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>字樹花園 - 沉浸式英語大冒險</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --primary-green: #7bed9f;
+            --dark-green: #2ed573;
+            --accent-yellow: #feca57;
+            --text-color: #2f3640;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+
+        body {
+            font-family: "Comic Sans MS", "Chalkboard SE", "微軟正黑體", sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; min-height: 100dvh; overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%; max-width: 480px; height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 15px; position: relative;
+        }
+
+        /* Top HUD */
+        .hud { display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 10; }
+        .user-switch-btn {
+            background: #fff; border: 2px solid #ddd; padding: 5px 12px; border-radius: 20px;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
+        }
+        .sun-badge {
+            background: #fff; border: 2px solid var(--accent-yellow); padding: 5px 15px;
+            border-radius: 50px; font-weight: bold; display: flex; align-items: center; gap: 5px; color: #e67e22;
+        }
+        .icon-btn {
+            background: #fff; border: 2px solid #ddd; border-radius: 50%;
+            width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Screen Areas */
+        .screen { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; justify-content: center; }
+        .hidden { display: none !important; }
+
+        /* Garden Home */
+        .garden-card {
+            background: var(--card-bg); border-radius: 25px; width: 100%; padding: 20px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 3px solid #f1f2f6; margin-bottom: 12px; position: relative;
+        }
+        .plant-avatar { font-size: 6.5rem; margin: 10px 0; transition: transform 0.3s; }
+        
+        /* 澆水動畫 */
+        .watering-can {
+            position: absolute; top: 20%; right: -50px; font-size: 4rem; opacity: 0;
+            transition: all 0.5s ease; pointer-events: none;
+        }
+        .watering-can.active { right: 25%; opacity: 1; transform: rotate(-30deg); }
+        .water-drops {
+            position: absolute; top: 45%; left: 45%; font-size: 1.5rem; opacity: 0; pointer-events: none;
+        }
+        .water-drops.active { animation: dropWater 0.8s ease 0.3s; }
+        @keyframes dropWater {
+            0% { opacity: 0; transform: translateY(-20px); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(30px); }
+        }
+        .plant-bounce { animation: plantGrow 0.6s ease 0.8s; }
+        @keyframes plantGrow { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+
+        .route-card {
+            background: #fff; border: 2px solid var(--primary-green); border-radius: 18px;
+            width: 100%; padding: 12px 18px; display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 10px; cursor: pointer;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #f6e58d, #f9ca24); border: none;
+            border-bottom: 5px solid #f0932b; width: 100%; padding: 16px; border-radius: 20px;
+            font-size: 1.5rem; font-weight: bold; color: #57606f; cursor: pointer; margin-bottom: 10px;
+        }
+        .start-btn:active { transform: translateY(3px); border-bottom-width: 2px; }
+
+        .chant-card-btn {
+            background: #fff; border: 2px solid #f9ca24; border-radius: 18px;
+            width: 100%; padding: 10px 18px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; color: #f0932b; font-weight: bold;
+        }
+
+        /* Quiz UI */
+        .quiz-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .progress-bar-bg { flex: 1; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 0 15px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--dark-green); width: 10%; transition: width 0.3s; }
+
+        .question-card {
+            background: #fff; border-radius: 20px; width: 100%; padding: 25px 15px;
+            text-align: center; border: 2px solid #f1f2f6; box-shadow: 0 8px 20px rgba(0,0,0,0.04); margin-bottom: 15px;
+        }
+        .image-hint { font-size: 5rem; margin: 5px 0; line-height: 1; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .opt-btn {
+            background: #fff; border: 3px solid #f1f2f6; border-bottom: 6px solid #e4e5e9;
+            border-radius: 18px; padding: 16px 8px; font-size: 1.25rem; font-weight: bold;
+            color: #333; cursor: pointer; transition: all 0.1s; display: flex;
+            align-items: center; justify-content: center; text-align: center;
+        }
+        .opt-btn.correct { background: #55efc4 !important; border-color: #00b894 !important; color: #fff; }
+        .opt-btn.wrong { background: #ff7675 !important; border-color: #d63031 !important; color: #fff; }
+
+        /* Spelling */
+        .spelling-slots { display: flex; gap: 8px; justify-content: center; margin: 15px 0; min-height: 50px; }
+        .slot-box {
+            width: 45px; height: 50px; border-bottom: 4px solid #747d8c;
+            font-size: 2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; color: #2ed573;
+        }
+        .keyboard-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-top: 10px; }
+        .key-btn {
+            background: #fff; border: 2px solid #dfe4ea; border-bottom: 4px solid #ced6e0;
+            border-radius: 12px; width: 45px; height: 50px; font-size: 1.4rem; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .action-key-btn {
+            background: #ffeaa7; border-color: #fdcb6e; border-bottom-color: #e1b12c; color: #d35400; font-size: 1rem; width: auto; padding: 0 15px;
+        }
+
+        /* Modals */
+        .modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 100; display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #fff; width: 90%; max-width: 420px; padding: 20px; border-radius: 20px;
+            max-height: 85vh; overflow-y: auto; text-align: left;
+        }
+        .path-option {
+            background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px;
+            padding: 12px 15px; margin-bottom: 10px; cursor: pointer;
+        }
+        .path-option.active { border-color: #2ed573; background: #e8fae8; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; }
+        .input-group input, .input-group select { width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        
+        .file-upload-box {
+            border: 2px dashed #7bed9f; background: #f0fff4; border-radius: 15px; padding: 15px; text-align: center; margin-bottom: 15px;
+        }
+
+        .chant-item {
+            background: #fff8e7; border: 2px solid #ffeaa7; border-radius: 15px;
+            padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit;
+        }
+        .yt-thumb-card {
+            width: 100%; height: 160px; border-radius: 12px; background-size: cover; background-position: center;
+            position: relative; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 5px;
+        }
+        .play-play-icon { font-size: 3.5rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+        .word-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top HUD -->
+        <div class="hud">
+            <button class="user-switch-btn" onclick="openProfileModal()">👤 <span id="current-user-name">哥哥</span> ▾</button>
+            <div class="sun-badge">☀️ <span id="sun-count">70</span></div>
+            <button class="icon-btn" onclick="openAdminModal()">⚙️</button>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen">
+            <div class="garden-card">
+                <div class="watering-can" id="water-can">🫖</div>
+                <div class="water-drops" id="water-drops">💧💧</div>
+
+                <h2 style="margin:5px 0;"><span id="plant-name">芽芽</span> 的字樹花園</h2>
+                <p style="color:#a4b0be; font-size:0.85rem; margin-top:0;">完成今天的練習，幫花園澆水 🌿</p>
+                <div class="streak-tag">🌱 <span id="plant-stage-name">萌芽種子</span> • 累積 <span id="water-days">2</span> 天</div>
+                <div class="plant-avatar" id="plant-avatar">🌱</div>
+            </div>
+
+            <div class="route-card" onclick="openPathModal()">
+                <div>
+                    <div style="font-size:0.8rem; color:#aaa;">當前學習主題</div>
+                    <div style="font-weight:bold; font-size:1.1rem; color:#2ed573;" id="current-path-name">🌱 生活英語：A1</div>
+                    <div style="font-size:0.85rem; color:#747d8c;" id="current-path-desc">生活英文、數字與顏色、課堂用語</div>
+                </div>
+                <div style="font-size:1.5rem;">➔</div>
+            </div>
+
+            <button class="start-btn" onclick="startDailyLesson()">START 🌿</button>
+
+            <div class="chant-card-btn" onclick="openChantModal()">
+                <div>🎶 Let's Sing! (Chants)</div>
+                <div>▶</div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen hidden">
+            <div class="quiz-header">
+                <button class="icon-btn" onclick="goHome()">✕</button>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="quiz-progress"></div></div>
+                <span id="quiz-num-text" style="font-weight:bold;">1/10</span>
+            </div>
+
+            <div class="question-card">
+                <div class="image-hint" id="target-icon">🛝</div>
+                <button class="icon-btn" style="margin: 10px auto; width:50px; height:50px; font-size:1.4rem;" onclick="speakQuestionOnly()">🔊</button>
+            </div>
+
+            <div class="options-grid" id="options-grid"></div>
+        </div>
+
+        <!-- Spelling Screen -->
+        <div id="spelling-screen" class="screen hidden">
+            <div class="quiz-header">
+                <button class="icon-btn" onclick="goHome()">✕</button>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="spelling-progress"></div></div>
+                <span id="spelling-num-text" style="font-weight:bold;">4/10</span>
+            </div>
+
+            <div class="question-card">
+                <div class="image-hint" id="spelling-icon">👟</div>
+                <button class="icon-btn" style="margin: 8px auto; width:45px; height:45px;" onclick="speakCurrentWord()">🔊</button>
+                <div class="spelling-slots" id="spelling-slots"></div>
+            </div>
+
+            <div class="keyboard-grid" id="keyboard-grid"></div>
+            <button class="start-btn" style="margin-top:15px; padding:12px; font-size:1.2rem;" onclick="checkSpelling()">確認拼字</button>
+        </div>
+
+        <!-- 韻文館 Modal -->
+        <div id="chant-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 style="margin-top:0;">🎶 Let's sing a song!</h3>
+                <p style="font-size:0.85rem; color:#666;">點擊首圖前往 YouTube 觀看帶動跳唱歌！</p>
+                <div id="chant-list"></div>
+                <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeChantModal()">關閉</button>
+            </div>
+        </div>
+
+        <!-- 角色 Modal -->
+        <div id="profile-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 style="margin-top:0;">👤 選擇孩子角色</h3>
+                <div id="user-list"></div>
+                <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
+                <h4>新增角色</h4>
+                <div class="input-group"><label>孩子暱稱</label><input type="text" id="new-user-name" placeholder="例: 妹妹"></div>
+                <div class="input-group"><label>植物暱稱</label><input type="text" id="new-plant-name" placeholder="例: 綠綠"></div>
+                <button class="start-btn" style="padding:10px; font-size:1rem;" onclick="addNewUser()">建立新角色</button>
+                <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeProfileModal()">關閉</button>
+            </div>
+        </div>
+
+        <!-- 路線 Modal -->
+        <div id="path-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 style="margin-top:0;">🗺️ 選擇學習主題</h3>
+                <div id="path-list"></div>
+                <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closePathModal()">確定</button>
+            </div>
+        </div>
+
+        <!-- 家長管理 Modal (支援干擾選項 CSV 匯入) -->
+        <div id="admin-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 style="margin-top:0;">⚙️ 家長管理 - CSV 題庫匯入</h3>
+                
+                <div class="file-upload-box">
+                    <h4 style="margin:0 0 8px 0; color:#2ed573;">📁 上傳 CSV 題庫檔</h4>
+                    <div class="input-group">
+                        <label>上傳目標主題 (Category)</label>
+                        <select id="upload-category-select">
+                            <option value="a1_life">🌱 生活英文與句型</option>
+                            <option value="a1_num">🔢 數字與顏色</option>
+                            <option value="a1_classroom">🏫 課堂用語</option>
+                            <option value="a1_phonics">🔤 自然拼讀 (Phonics)</option>
+                        </select>
+                    </div>
+                    <input type="file" id="csv-file-input" accept=".csv" style="font-size:0.9rem; width:100%;">
+                    <p style="font-size:0.75rem; color:#666; margin:8px 0 0 0;">格式: 正確答案,中文對應,其他錯誤選項(以 / 分開)</p>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:15px;">
+                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#747d8c; color:#fff; margin-bottom:0;" onclick="downloadSampleCsv()">📥 下載 CSV 範本</button>
+                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 清空題庫</button>
+                </div>
+
+                <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
+                <h4>現有題庫總數 (<span id="word-count">0</span> 題)</h4>
+                <div id="word-list" style="max-height: 150px; overflow-y: auto;"></div>
+
+                <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeAdminModal()">關閉後台</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const routes = [
+            { id: "a1_life", name: "🌱 生活英文與句型", desc: "日常對話、問答與基礎表達" },
+            { id: "a1_num", name: "🔢 數字與顏色", desc: "14/40等數字辨析、顏色認識" },
+            { id: "a1_classroom", name: "🏫 課堂用語", desc: "Raise your hand, Sit down..." },
+            { id: "a1_phonics", name: "🔤 自然拼讀 (Phonics)", desc: "CVC 短母音與基礎發音" }
+        ];
+
+        // 自動匹配 Emoji 字典 (擴充家具與動詞)
+        const emojiDictionary = {
+            "slide": "🛝", "溜滑梯": "🛝",
+            "swing": "🛞", "盪鞦韆": "🛞",
+            "table": "🪵", "桌子": "🪵",
+            "desk": "🖥️", "書桌": "🖥️",
+            "chair": "🪑", "椅子": "🪑",
+            "octopus": "🐙", "章魚": "🐙",
+            "apple": "🍎", "蘋果": "🍎",
+            "banana": "🍌", "香蕉": "🍌",
+            "dog": "🐶", "小狗": "🐶",
+            "cat": "🐱", "貓咪": "🐱",
+            "fish": "🐟", "魚": "🐟",
+            "book": "📖", "書本": "📖",
+            "pencil": "✏️", "鉛筆": "✏️",
+            "red": "🔴", "紅色": "🔴",
+            "blue": "🔵", "藍色": "🔵",
+            "yellow": "🟡", "黃色": "🟡",
+            "fourteen": "🎧", "十四": "🎧",
+            "forty": "🎧", "四十": "🎧",
+            "thirteen": "🎧", "十三": "🎧",
+            "thirty": "🎧", "三十": "🎧",
+            "raise your hand.": "✋", "舉手": "✋",
+            "sit down.": "🪑", "坐下": "🪑",
+            "stand up.": "🚶", "站起來": "🚶",
+            "an apple": "🍎", "a book": "📖"
+        };
+
+        let chants = JSON.parse(localStorage.getItem('garden_chants')) || [
+            { id: "ch1", title: "Head, Shoulders, Knees and Toes", ytId: "WX8HmogNyCY", icon: "🙆‍♂️🦵🦶" },
+            { id: "ch2", title: "One Little Finger", ytId: "eBVqcTEC3zQ", icon: "☝️👶✨" },
+            { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
+        ];
+
+        // 內建官方題庫 (帶精準特定選項)
+        const builtinVocab = [
+            { id: "b1", en: "I see a table.", zh: "桌子", icon: "🪵", category: "a1_life", options: ["I see a table.", "I see a desk.", "I see a chair.", "I see a bed."] },
+            { id: "b2", en: "I see a desk.", zh: "書桌", icon: "🖥️", category: "a1_life", options: ["I see a desk.", "I see a table.", "I see a chair.", "I see a bed."] },
+            { id: "b3", en: "an octopus", zh: "章魚", icon: "🐙", category: "a1_life", options: ["an octopus", "a octopus", "a dog", "a cat"] },
+            { id: "b4", en: "a dog", zh: "小狗", icon: "🐶", category: "a1_life", options: ["a dog", "an dog", "a cat", "an apple"] },
+            { id: "b5", en: "slide", zh: "溜滑梯", icon: "🛝", category: "a1_life", options: ["slide", "swing", "see-saw", "run"] },
+            { id: "b6", en: "swing", zh: "盪鞦韆", icon: "🛞", category: "a1_life", options: ["swing", "slide", "jump", "walk"] },
+
+            { id: "b7", en: "forty", zh: "四十", icon: "🎧", category: "a1_num", options: ["40", "14", "4", "400"] },
+            { id: "b8", en: "fourteen", zh: "十四", icon: "🎧", category: "a1_num", options: ["14", "40", "4", "400"] },
+
+            { id: "c1", en: "Raise your hand.", zh: "舉手", icon: "✋", category: "a1_classroom", options: ["Raise your hand.", "Stand up.", "Sit down.", "Look at me."] },
+            { id: "c2", en: "Sit down.", zh: "坐下", icon: "🪑", category: "a1_classroom", options: ["Sit down.", "Stand up.", "Listen to me.", "Look at me."] },
+
+            { id: "p1", en: "cat", zh: "貓咪", icon: "🐱", category: "a1_phonics" },
+            { id: "p2", en: "fish", zh: "魚", icon: "🐟", category: "a1_phonics" }
+        ];
+
+        let users = JSON.parse(localStorage.getItem('garden_users')) || [
+            { id: "u1", name: "哥哥", plantName: "芽芽", days: 2, sun: 70, activeRoute: "a1_life" },
+            { id: "u2", name: "妹妹", plantName: "綠綠", days: 1, sun: 30, activeRoute: "a1_life" }
+        ];
+        let currentUserId = localStorage.getItem('garden_current_user') || "u1";
+        let userVocab = JSON.parse(localStorage.getItem('garden_user_vocab')) || [];
+
+        let currentQIndex = 0;
+        let currentLessonQuestions = [];
+        let currentWord = null;
+        let userSpellingInput = [];
+        let isAnsweringLocked = false;
+
+        const synth = window.speechSynthesis;
+        let preferredVoice = null;
+
+        function initVoices() {
+            if (!synth) return;
+            const voices = synth.getVoices();
+            preferredVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha'))) || voices.find(v => v.lang.startsWith('en'));
+        }
+        if (synth) { synth.onvoiceschanged = initVoices; initVoices(); }
+
+        function speakText(text, onEndCallback = null) {
+            if (!synth) return;
+            synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-US'; utter.rate = 0.8;
+            if (preferredVoice) utter.voice = preferredVoice;
+            if (onEndCallback) utter.onend = onEndCallback;
+            synth.speak(utter);
+        }
+
+        function getCurrentUser() { return users.find(u => u.id === currentUserId) || users[0]; }
+
+        function updateGardenUI() {
+            const currentUser = getCurrentUser();
+            document.getElementById('current-user-name').innerText = currentUser.name;
+            document.getElementById('sun-count').innerText = currentUser.sun;
+            document.getElementById('plant-name').innerText = currentUser.plantName;
+            document.getElementById('water-days').innerText = currentUser.days;
+
+            let icon = "🌱", stageName = "萌芽種子";
+            if (currentUser.days >= 7) { icon = "🌻"; stageName = "綻放花朵"; }
+            else if (currentUser.days >= 3) { icon = "🌿"; stageName = "成長幼苗"; }
+
+            document.getElementById('plant-avatar').innerText = icon;
+            document.getElementById('plant-stage-name').innerText = stageName;
+
+            const activeRouteObj = routes.find(r => r.id === currentUser.activeRoute) || routes[0];
+            document.getElementById('current-path-name').innerText = activeRouteObj.name;
+            document.getElementById('current-path-desc').innerText = activeRouteObj.desc;
+        }
+
+        function getActiveVocabPool() {
+            const currentUser = getCurrentUser();
+            const allVocab = [...builtinVocab, ...userVocab];
+            return allVocab.filter(v => v.category === currentUser.activeRoute);
+        }
+
+        function startDailyLesson() {
+            const pool = getActiveVocabPool();
+            if (pool.length < 2) {
+                alert("當前路線的題目太少囉！請點右上角⚙️後台匯入 CSV 題庫。");
+                return;
+            }
+
+            currentLessonQuestions = [];
+            for (let i = 0; i < 10; i++) {
+                const randWord = pool[Math.floor(Math.random() * pool.length)];
+                const type = (randWord.en.includes(" ") || i % 2 === 0) ? 'listening' : 'spelling';
+                currentLessonQuestions.push({ word: randWord, type: type });
+            }
+            currentQIndex = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQIndex >= currentLessonQuestions.length) {
+                finishDailyLesson();
+                return;
+            }
+
+            isAnsweringLocked = false;
+            const q = currentLessonQuestions[currentQIndex];
+            currentWord = q.word;
+            document.getElementById('home-screen').classList.add('hidden');
+
+            if (q.type === 'listening') {
+                document.getElementById('spelling-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                setupListeningQuiz();
+            } else {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('spelling-screen').classList.remove('hidden');
+                setupSpellingQuiz();
+            }
+        }
+
+        function setupListeningQuiz() {
+            document.getElementById('quiz-progress').style.width = `${((currentQIndex + 1) / 10) * 100}%`;
+            document.getElementById('quiz-num-text').innerText = `${currentQIndex + 1}/10`;
+            document.getElementById('target-icon').innerText = currentWord.icon || getAutoEmoji(currentWord.en, currentWord.zh);
+
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+
+            let options = currentWord.options ? [...currentWord.options] : [currentWord.en];
+            if (!currentWord.options) {
+                const pool = getActiveVocabPool();
+                while (options.length < 4) {
+                    const rand = pool[Math.floor(Math.random() * pool.length)].en;
+                    if (!options.includes(rand)) options.push(rand);
+                }
+                options.sort(() => Math.random() - 0.5);
+            }
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkListening(opt, btn);
+                grid.appendChild(btn);
+            });
+
+            speakQuestionOnly();
+        }
+
+        function speakQuestionOnly() {
+            speakText(currentWord.en);
+        }
+
+        function checkListening(selected, btn) {
+            if (isAnsweringLocked) return;
+
+            const correctAns = currentWord.options ? currentWord.options[0] : currentWord.en;
+
+            if (selected === correctAns) {
+                isAnsweringLocked = true;
+                btn.classList.add('correct');
+
+                speakText(selected, () => {
+                    setTimeout(() => {
+                        currentQIndex++;
+                        loadQuestion();
+                    }, 400);
+                });
+            } else {
+                btn.classList.add('wrong');
+                speakText(selected);
+                setTimeout(() => btn.classList.remove('wrong'), 800);
+            }
+        }
+
+        function setupSpellingQuiz() {
+            document.getElementById('spelling-progress').style.width = `${((currentQIndex + 1) / 10) * 100}%`;
+            document.getElementById('spelling-num-text').innerText = `${currentQIndex + 1}/10`;
+            document.getElementById('spelling-icon').innerText = currentWord.icon || getAutoEmoji(currentWord.en, currentWord.zh);
+
+            userSpellingInput = [];
+            renderSpellingSlots();
+
+            const letters = currentWord.en.replace(/\s+/g, '').split('');
+            while (letters.length < currentWord.en.length + 2) {
+                const randChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+                letters.push(randChar);
+            }
+            letters.sort(() => Math.random() - 0.5);
+
+            renderKeyboard(letters);
+            speakCurrentWord();
+        }
+
+        function renderKeyboard(letters) {
+            const kGrid = document.getElementById('keyboard-grid');
+            kGrid.innerHTML = '';
+
+            letters.forEach(char => {
+                const btn = document.createElement('button');
+                btn.className = 'key-btn';
+                btn.innerText = char;
+                btn.onclick = () => {
+                    if (userSpellingInput.length < currentWord.en.length) {
+                        userSpellingInput.push(char);
+                        renderSpellingSlots();
+                        speakText(char);
+                    }
+                };
+                kGrid.appendChild(btn);
+            });
+
+            const backBtn = document.createElement('button');
+            backBtn.className = 'key-btn action-key-btn';
+            backBtn.innerText = '⌫';
+            backBtn.onclick = () => {
+                if (userSpellingInput.length > 0) {
+                    userSpellingInput.pop();
+                    renderSpellingSlots();
+                }
+            };
+            kGrid.appendChild(backBtn);
+
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'key-btn action-key-btn';
+            resetBtn.innerText = '↺';
+            resetBtn.onclick = () => {
+                userSpellingInput = [];
+                renderSpellingSlots();
+            };
+            kGrid.appendChild(resetBtn);
+        }
+
+        function renderSpellingSlots() {
+            const slots = document.getElementById('spelling-slots');
+            slots.innerHTML = '';
+            for (let i = 0; i < currentWord.en.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'slot-box';
+                box.innerText = userSpellingInput[i] || '';
+                box.onclick = () => { userSpellingInput.pop(); renderSpellingSlots(); };
+                slots.appendChild(box);
+            }
+        }
+
+        function checkSpelling() {
+            if (isAnsweringLocked) return;
+            if (userSpellingInput.join('') === currentWord.en.replace(/\s+/g, '')) {
+                isAnsweringLocked = true;
+                speakText(currentWord.en, () => {
+                    setTimeout(() => { currentQIndex++; loadQuestion(); }, 400);
+                });
+            } else {
+                speakText("Try again");
+                userSpellingInput = [];
+                renderSpellingSlots();
+            }
+        }
+
+        function speakCurrentWord() {
+            if (currentWord) speakText(currentWord.en);
+        }
+
+        function finishDailyLesson() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('spelling-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+
+            const currentUser = getCurrentUser();
+            currentUser.days += 1;
+            currentUser.sun += 10;
+            localStorage.setItem('garden_users', JSON.stringify(users));
+
+            updateGardenUI();
+
+            const can = document.getElementById('water-can');
+            const drops = document.getElementById('water-drops');
+            const avatar = document.getElementById('plant-avatar');
+
+            can.classList.add('active');
+            drops.classList.add('active');
+            avatar.classList.add('plant-bounce');
+
+            speakText("Good job! Watering time!");
+
+            setTimeout(() => {
+                can.classList.remove('active');
+                drops.classList.remove('active');
+                avatar.classList.remove('plant-bounce');
+                alert(`🎉 太棒了！${currentUser.name}完成了今天任務，成功幫 ${currentUser.plantName} 澆水！`);
+            }, 1800);
+        }
+
+        function goHome() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('spelling-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+        }
+
+        /* 韻文館 */
+        function openChantModal() {
+            const list = document.getElementById('chant-list');
+            list.innerHTML = '';
+            chants.slice(0, 4).forEach(c => {
+                const cleanYtId = extractYtId(c.ytId);
+                const thumbUrl = `https://img.youtube.com/vi/${cleanYtId}/hqdefault.jpg`;
+                const ytLink = `https://www.youtube.com/watch?v=${cleanYtId}`;
+
+                const div = document.createElement('a');
+                div.className = 'chant-item';
+                div.href = ytLink;
+                div.target = '_blank';
+                div.innerHTML = `
+                    <div style="font-size:1.1rem; font-weight:bold; color:#d35400;">
+                        ${c.icon} ${c.title}
+                    </div>
+                    <div class="yt-thumb-card" style="background-image: url('${thumbUrl}');">
+                        <div class="play-play-icon">▶️</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('chant-modal').classList.remove('hidden');
+        }
+
+        function extractYtId(urlOrId) {
+            if (!urlOrId) return "WX8HmogNyCY";
+            if (urlOrId.includes("v=")) return urlOrId.split("v=")[1].split("&")[0];
+            if (urlOrId.includes("youtu.be/")) return urlOrId.split("youtu.be/")[1].split("?")[0];
+            return urlOrId.trim();
+        }
+
+        function closeChantModal() { document.getElementById('chant-modal').classList.add('hidden'); }
+
+        /* 角色 Modal */
+        function openProfileModal() {
+            const list = document.getElementById('user-list');
+            list.innerHTML = '';
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = `path-option ${u.id === currentUserId ? 'active' : ''}`;
+                div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center';
+
+                div.innerHTML = `
+                    <div onclick="selectUser('${u.id}')" style="flex:1; cursor:pointer;">
+                        <b>👤 ${u.name}</b> (植物: ${u.plantName})<br>
+                        <small style="color:#666;">已澆水 ${u.days} 天</small>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="icon-btn" style="width:32px; height:32px; font-size:0.9rem;" onclick="editUser('${u.id}')">✏️</button>
+                        <button class="icon-btn" style="width:32px; height:32px; font-size:0.9rem; border-color:#ff7675; color:#ff7675;" onclick="deleteUser('${u.id}')">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function selectUser(id) {
+            currentUserId = id;
+            localStorage.setItem('garden_current_user', id);
+            updateGardenUI();
+            closeProfileModal();
+        }
+
+        function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+
+        function editUser(id) {
+            const u = users.find(user => user.id === id);
+            if (!u) return;
+            const newName = prompt("請輸入新的孩子暱稱：", u.name);
+            if (newName === null) return;
+            const newPlantName = prompt("請輸入新的植物暱稱：", u.plantName);
+            if (newPlantName === null) return;
+
+            if (newName.trim()) u.name = newName.trim();
+            if (newPlantName.trim()) u.plantName = newPlantName.trim();
+
+            localStorage.setItem('garden_users', JSON.stringify(users));
+            updateGardenUI();
+            openProfileModal();
+        }
+
+        function deleteUser(id) {
+            if (users.length <= 1) return alert("至少需要保留一個角色喔！");
+            const u = users.find(user => user.id === id);
+            if (!u) return;
+
+            if (confirm(`確定要刪除「${u.name}」的角色記錄嗎？`)) {
+                users = users.filter(user => user.id !== id);
+                if (currentUserId === id) {
+                    currentUserId = users[0].id;
+                    localStorage.setItem('garden_current_user', currentUserId);
+                }
+                localStorage.setItem('garden_users', JSON.stringify(users));
+                updateGardenUI();
+                openProfileModal();
+            }
+        }
+
+        function addNewUser() {
+            const name = document.getElementById('new-user-name').value.trim();
+            const plantName = document.getElementById('new-plant-name').value.trim();
+            if (!name || !plantName) return alert("請填寫名字與植物名稱！");
+
+            const newUser = { id: "u_" + Date.now(), name, plantName, days: 0, sun: 0, activeRoute: "a1_life" };
+            users.push(newUser);
+            currentUserId = newUser.id;
+            localStorage.setItem('garden_users', JSON.stringify(users));
+            localStorage.setItem('garden_current_user', newUser.id);
+            
+            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-plant-name').value = '';
+            updateGardenUI();
+            closeProfileModal();
+        }
+
+        /* 路線 Modal */
+        function openPathModal() {
+            const list = document.getElementById('path-list');
+            list.innerHTML = '';
+            const currentUser = getCurrentUser();
+            routes.forEach(r => {
+                const div = document.createElement('div');
+                div.className = `path-option ${r.id === currentUser.activeRoute ? 'active' : ''}`;
+                div.innerHTML = `<div><b>${r.name}</b><br><small style="color:#666;">${r.desc}</small></div>`;
+                div.onclick = () => {
+                    currentUser.activeRoute = r.id;
+                    localStorage.setItem('garden_users', JSON.stringify(users));
+                    updateGardenUI();
+                    closePathModal();
+                };
+                list.appendChild(div);
+            });
+            document.getElementById('path-modal').classList.remove('hidden');
+        }
+        function closePathModal() { document.getElementById('path-modal').classList.add('hidden'); }
+
+        /* 智慧自動匹配 Emoji 函式 */
+        function getAutoEmoji(enText = "", zhText = "") {
+            const cleanZh = zhText.trim().toLowerCase();
+            const cleanEn = enText.trim().toLowerCase();
+
+            if (cleanZh && emojiDictionary[cleanZh]) return emojiDictionary[cleanZh];
+            if (cleanEn && emojiDictionary[cleanEn]) return emojiDictionary[cleanEn];
+
+            for (let key in emojiDictionary) {
+                if (cleanZh.includes(key) || cleanEn.includes(key)) return emojiDictionary[key];
+            }
+            return "📖";
+        }
+
+        /* 家長 Modal 與三欄式 CSV 匯入 */
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            renderAdminWordList();
+        }
+        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+        
+        function renderAdminWordList() {
+            const list = document.getElementById('word-list');
+            const allVocab = [...builtinVocab, ...userVocab];
+            document.getElementById('word-count').innerText = allVocab.length;
+            list.innerHTML = '';
+
+            allVocab.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'word-list-item';
+                div.innerHTML = `<span><b>${item.en}</b> (圖: ${item.icon || getAutoEmoji(item.en, item.zh)}) [${item.category}]</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        // CSV 三欄解析 (欄位A英文答案, 欄位B中文對應, 欄位C干擾選項)
+        document.getElementById('csv-file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const targetCategory = document.getElementById('upload-category-select').value;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const text = evt.target.result;
+                parseAndSaveCsv(text, targetCategory);
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        function parseAndSaveCsv(csvText, defaultCategory) {
+            const lines = csvText.split('\n');
+            let count = 0;
+
+            lines.forEach((line, idx) => {
+                if (idx === 0 && (line.includes('英文') || line.includes('en'))) return;
+                const cols = line.split(',').map(c => c.trim());
+                if (cols.length >= 1 && cols[0]) {
+                    const en = cols[0];
+                    const zh = cols[1] || en;
+                    const icon = getAutoEmoji(en, zh);
+
+                    let itemObj = {
+                        id: "csv_" + Date.now() + "_" + idx,
+                        en, zh, icon, category: defaultCategory
+                    };
+
+                    // 如果 C 欄有指定干擾選項（以 / 分開）
+                    if (cols[2]) {
+                        const customOptions = cols[2].split('/').map(o => o.trim());
+                        itemObj.options = [en, ...customOptions];
+                    }
+
+                    userVocab.push(itemObj);
+                    count++;
+                }
+            });
+
+            localStorage.setItem('garden_user_vocab', JSON.stringify(userVocab));
+            alert(`🎉 成功匯入 ${count} 筆題目！`);
+            renderAdminWordList();
+        }
+
+        function downloadSampleCsv() {
+            const csvContent = "data:text/csv;charset=utf-8,英文,中文,干擾選項(以斜線/分開)\nI see a table.,桌子,I see a desk. / I see a chair. / I see a bed.\nan octopus,章魚,a octopus / a dog / a cat\nslide,溜滑梯,swing / see-saw / run\nfourteen,十四 (14),40 / 4 / 400\n";
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "sample_words.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearUserVocab() {
+            if (confirm("確定要清空所有自行匯入的題庫嗎？")) {
+                userVocab = [];
+                localStorage.removeItem('garden_user_vocab');
+                renderAdminWordList();
+            }
+        }
+
+        updateGardenUI();
+    </script>
+</body>
+</html>
