@@ -31,6 +31,7 @@
 
         /* Top HUD */
         .hud { display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 10; }
+        .hud-right { display: flex; gap: 8px; }
         .user-switch-btn {
             background: #fff; border: 2px solid #ddd; padding: 5px 12px; border-radius: 20px;
             font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
@@ -100,10 +101,11 @@
         .progress-bar-fill { height: 100%; background: var(--dark-green); width: 10%; transition: width 0.3s; }
 
         .question-card {
-            background: #fff; border-radius: 20px; width: 100%; padding: 25px 15px;
+            background: #fff; border-radius: 20px; width: 100%; padding: 20px 15px;
             text-align: center; border: 2px solid #f1f2f6; box-shadow: 0 8px 20px rgba(0,0,0,0.04); margin-bottom: 15px;
         }
-        .image-hint { font-size: 5rem; margin: 5px 0; line-height: 1; }
+        .image-hint { font-size: 4.5rem; margin: 5px 0; line-height: 1; }
+        .question-prompt { font-size: 1.25rem; font-weight: bold; color: #2f3640; margin-bottom: 8px; }
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
         .opt-btn {
@@ -147,7 +149,6 @@
         .path-option.active { border-color: #2ed573; background: #e8fae8; }
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; }
-        .input-group input, .input-group select { width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
         
         .file-upload-box {
             border: 2px dashed #7bed9f; background: #f0fff4; border-radius: 15px; padding: 15px; text-align: center; margin-bottom: 15px;
@@ -163,7 +164,10 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 5px;
         }
         .play-play-icon { font-size: 3.5rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
-        .word-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        .stat-card {
+            background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -173,7 +177,11 @@
         <div class="hud">
             <button class="user-switch-btn" onclick="openProfileModal()">👤 <span id="current-user-name">哥哥</span> ▾</button>
             <div class="sun-badge">☀️ <span id="sun-count">70</span></div>
-            <button class="icon-btn" onclick="openAdminModal()">⚙️</button>
+            <div class="hud-right">
+                <button class="icon-btn" onclick="openHelpModal()" title="玩法說明">❓</button>
+                <button class="icon-btn" onclick="goHome()" title="回到首頁">🏠</button>
+                <button class="icon-btn" onclick="openAdminModal()" title="家長後台">⚙️</button>
+            </div>
         </div>
 
         <!-- Home Screen -->
@@ -191,8 +199,8 @@
             <div class="route-card" onclick="openPathModal()">
                 <div>
                     <div style="font-size:0.8rem; color:#aaa;">當前學習主題</div>
-                    <div style="font-weight:bold; font-size:1.1rem; color:#2ed573;" id="current-path-name">🌱 生活英語：A1</div>
-                    <div style="font-size:0.85rem; color:#747d8c;" id="current-path-desc">生活英文、數字與顏色、課堂用語</div>
+                    <div style="font-weight:bold; font-size:1.1rem; color:#2ed573;" id="current-path-name">🌱 生活單字</div>
+                    <div style="font-size:0.85rem; color:#747d8c;" id="current-path-desc">日常生活詞彙與認知</div>
                 </div>
                 <div style="font-size:1.5rem;">➔</div>
             </div>
@@ -214,7 +222,8 @@
             </div>
 
             <div class="question-card">
-                <div class="image-hint" id="target-icon">🛝</div>
+                <div class="question-prompt" id="question-prompt" style="display:none;">What do you see?</div>
+                <div class="image-hint" id="target-icon">🪵</div>
                 <button class="icon-btn" style="margin: 10px auto; width:50px; height:50px; font-size:1.4rem;" onclick="speakQuestionOnly()">🔊</button>
             </div>
 
@@ -237,6 +246,20 @@
 
             <div class="keyboard-grid" id="keyboard-grid"></div>
             <button class="start-btn" style="margin-top:15px; padding:12px; font-size:1.2rem;" onclick="checkSpelling()">確認拼字</button>
+        </div>
+
+        <!-- 玩法說明 Modal -->
+        <div id="help-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 style="margin-top:0;">❓ 如何幫花園澆水？</h3>
+                <p style="font-size:0.95rem; line-height:1.6; color:#555;">
+                    1. 點擊<b>當前學習主題</b>選擇今天想練習的內容。<br>
+                    2. 點擊大大的 <b>START 🌿</b> 按鈕開始 10 題特訓。<br>
+                    3. 專心看圖聽發音，選出正確的英文答案。<br>
+                    4. 答對完成任務，幫小樹澆水看它一天天長大！
+                </p>
+                <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeHelpModal()">懂了！</button>
+            </div>
         </div>
 
         <!-- 韻文館 Modal -->
@@ -272,34 +295,32 @@
             </div>
         </div>
 
-        <!-- 家長管理 Modal (支援干擾選項 CSV 匯入) -->
+        <!-- 家長管理 Modal -->
         <div id="admin-modal" class="modal hidden">
             <div class="modal-content">
-                <h3 style="margin-top:0;">⚙️ 家長管理 - CSV 題庫匯入</h3>
+                <h3 style="margin-top:0;">⚙️ 家長管理 - 檔案匯入</h3>
                 
                 <div class="file-upload-box">
                     <h4 style="margin:0 0 8px 0; color:#2ed573;">📁 上傳 CSV 題庫檔</h4>
-                    <div class="input-group">
-                        <label>上傳目標主題 (Category)</label>
-                        <select id="upload-category-select">
-                            <option value="a1_life">🌱 生活英文與句型</option>
-                            <option value="a1_num">🔢 數字與顏色</option>
-                            <option value="a1_classroom">🏫 課堂用語</option>
-                            <option value="a1_phonics">🔤 自然拼讀 (Phonics)</option>
-                        </select>
-                    </div>
+                    <p style="font-size:0.8rem; color:#555; margin-bottom:10px; line-height:1.4;">
+                        系統會根據<b>檔名自動歸類</b>：<br>
+                        • <b>vocab.csv</b> ➔ 生活單字<br>
+                        • <b>sentence.csv</b> ➔ 生活句型 (含教室用語)<br>
+                        • <b>phonics.csv</b> ➔ 自然拼讀<br>
+                        <small style="color:#888;">(數字與顏色由系統自動生成，免上傳檔)</small>
+                    </p>
                     <input type="file" id="csv-file-input" accept=".csv" style="font-size:0.9rem; width:100%;">
-                    <p style="font-size:0.75rem; color:#666; margin:8px 0 0 0;">格式: 正確答案,中文對應,其他錯誤選項(以 / 分開)</p>
+                    <div id="upload-status-msg" style="font-size:0.8rem; font-weight:bold; margin-top:8px;"></div>
                 </div>
 
                 <div style="display:flex; gap:8px; margin-bottom:15px;">
-                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#747d8c; color:#fff; margin-bottom:0;" onclick="downloadSampleCsv()">📥 下載 CSV 範本</button>
-                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 清空題庫</button>
+                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#747d8c; color:#fff; margin-bottom:0;" onclick="downloadSampleCsv()">📥 下載範本</button>
+                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 清空匯入檔</button>
                 </div>
 
                 <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
-                <h4>現有題庫總數 (<span id="word-count">0</span> 題)</h4>
-                <div id="word-list" style="max-height: 150px; overflow-y: auto;"></div>
+                <h4>目前題庫總比數</h4>
+                <div id="stat-summary-list"></div>
 
                 <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeAdminModal()">關閉後台</button>
             </div>
@@ -308,39 +329,71 @@
 
     <script>
         const routes = [
-            { id: "a1_life", name: "🌱 生活英文與句型", desc: "日常對話、問答與基礎表達" },
-            { id: "a1_num", name: "🔢 數字與顏色", desc: "14/40等數字辨析、顏色認識" },
-            { id: "a1_classroom", name: "🏫 課堂用語", desc: "Raise your hand, Sit down..." },
-            { id: "a1_phonics", name: "🔤 自然拼讀 (Phonics)", desc: "CVC 短母音與基礎發音" }
+            { id: "vocab", name: "🌱 生活單字", desc: "日常生活詞彙與認知" },
+            { id: "sentence", name: "💬 生活句型", desc: "日常對話問答與教室用語" },
+            { id: "number", name: "🔢 數字與顏色", desc: "1~20, 20~90整十聽力辨析、七彩" },
+            { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲" }
         ];
 
-        // 自動匹配 Emoji 字典 (擴充家具與動詞)
+        // 自動 Emoji 對應字典
         const emojiDictionary = {
-            "slide": "🛝", "溜滑梯": "🛝",
-            "swing": "🛞", "盪鞦韆": "🛞",
-            "table": "🪵", "桌子": "🪵",
-            "desk": "🖥️", "書桌": "🖥️",
-            "chair": "🪑", "椅子": "🪑",
-            "octopus": "🐙", "章魚": "🐙",
-            "apple": "🍎", "蘋果": "🍎",
-            "banana": "🍌", "香蕉": "🍌",
-            "dog": "🐶", "小狗": "🐶",
-            "cat": "🐱", "貓咪": "🐱",
-            "fish": "🐟", "魚": "🐟",
-            "book": "📖", "書本": "📖",
-            "pencil": "✏️", "鉛筆": "✏️",
-            "red": "🔴", "紅色": "🔴",
-            "blue": "🔵", "藍色": "🔵",
-            "yellow": "🟡", "黃色": "🟡",
-            "fourteen": "🎧", "十四": "🎧",
-            "forty": "🎧", "四十": "🎧",
-            "thirteen": "🎧", "十三": "🎧",
-            "thirty": "🎧", "三十": "🎧",
-            "raise your hand.": "✋", "舉手": "✋",
-            "sit down.": "🪑", "坐下": "🪑",
-            "stand up.": "🚶", "站起來": "🚶",
-            "an apple": "🍎", "a book": "📖"
+            "slide": "🛝", "溜滑梯": "🛝", "swing": "🛞", "盪鞦韆": "🛞",
+            "table": "🪵", "桌子": "🪵", "desk": "🖥️", "書桌": "🖥️", "chair": "🪑", "椅子": "🪑",
+            "octopus": "🐙", "章魚": "🐙", "apple": "🍎", "蘋果": "🍎", "banana": "🍌", "香蕉": "🍌",
+            "dog": "🐶", "小狗": "🐶", "cat": "🐱", "貓咪": "🐱", "fish": "🐟", "魚": "🐟",
+            "book": "📖", "書本": "📖", "pencil": "✏️", "鉛筆": "✏️", "red": "🔴", "藍色": "🔵",
+            "raise your hand.": "✋", "sit down.": "🪑", "stand up.": "🚶"
         };
+
+        // 自動生成數字與顏色題（免 CSV，封鎖百，只留1~20與整十 20~90）
+        function generateNumberAndColorPool() {
+            const pool = [];
+            const numWords = {
+                1:"one", 2:"two", 3:"three", 4:"four", 5:"five", 6:"six", 7:"seven", 8:"eight", 9:"nine", 10:"ten",
+                11:"eleven", 12:"twelve", 13:"thirteen", 14:"fourteen", 15:"fifteen", 16:"sixteen", 17:"seventeen", 18:"eighteen", 19:"nineteen", 20:"twenty",
+                30:"thirty", 40:"forty", 50:"fifty", 60:"sixty", 70:"seventy", 80:"eighty", 90:"ninety"
+            };
+
+            // 1. 生成數字題
+            for (let num in numWords) {
+                const en = numWords[num];
+                let distractor1 = (parseInt(num) < 20 && parseInt(num) > 12) ? (parseInt(num) - 10) * 10 : parseInt(num) + 10;
+                if (distractor1 === parseInt(num)) distractor1 += 5;
+                
+                pool.push({
+                    id: "num_gen_" + num,
+                    en: en,
+                    prompt: "",
+                    icon: "🎧",
+                    category: "number",
+                    options: [num.toString(), distractor1.toString(), (parseInt(num)+1).toString(), "5"]
+                });
+            }
+
+            // 2. 生成顏色題
+            const colors = [
+                { en: "red", zh: "紅色", icon: "🔴" },
+                { en: "orange", zh: "橘色", icon: "🟠" },
+                { en: "yellow", zh: "黃色", icon: "🟡" },
+                { en: "green", zh: "綠色", icon: "🟢" },
+                { en: "blue", zh: "藍色", icon: "🔵" },
+                { en: "purple", zh: "紫色", icon: "🟣" },
+                { en: "rainbow", zh: "彩虹", icon: "🌈" }
+            ];
+
+            colors.forEach((c, idx) => {
+                pool.push({
+                    id: "color_gen_" + idx,
+                    en: c.en,
+                    prompt: "",
+                    icon: c.icon,
+                    category: "number",
+                    options: [c.en, "red", "blue", "yellow"].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4)
+                });
+            });
+
+            return pool;
+        }
 
         let chants = JSON.parse(localStorage.getItem('garden_chants')) || [
             { id: "ch1", title: "Head, Shoulders, Knees and Toes", ytId: "WX8HmogNyCY", icon: "🙆‍♂️🦵🦶" },
@@ -348,31 +401,26 @@
             { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
         ];
 
-        // 內建官方題庫 (帶精準特定選項)
+        // 內建官方題庫
         const builtinVocab = [
-            { id: "b1", en: "I see a table.", zh: "桌子", icon: "🪵", category: "a1_life", options: ["I see a table.", "I see a desk.", "I see a chair.", "I see a bed."] },
-            { id: "b2", en: "I see a desk.", zh: "書桌", icon: "🖥️", category: "a1_life", options: ["I see a desk.", "I see a table.", "I see a chair.", "I see a bed."] },
-            { id: "b3", en: "an octopus", zh: "章魚", icon: "🐙", category: "a1_life", options: ["an octopus", "a octopus", "a dog", "a cat"] },
-            { id: "b4", en: "a dog", zh: "小狗", icon: "🐶", category: "a1_life", options: ["a dog", "an dog", "a cat", "an apple"] },
-            { id: "b5", en: "slide", zh: "溜滑梯", icon: "🛝", category: "a1_life", options: ["slide", "swing", "see-saw", "run"] },
-            { id: "b6", en: "swing", zh: "盪鞦韆", icon: "🛞", category: "a1_life", options: ["swing", "slide", "jump", "walk"] },
+            { id: "b1", en: "I see a table.", prompt: "What do you see?", icon: "🪵", category: "sentence", options: ["I see a table.", "I see a desk.", "I see a chair.", "I see a bed."] },
+            { id: "b2", en: "I see a desk.", prompt: "What do you see?", icon: "🖥️", category: "sentence", options: ["I see a desk.", "I see a table.", "I see a chair.", "I see a bed."] },
+            { id: "b3", en: "Raise your hand.", prompt: "Listen and do:", icon: "✋", category: "sentence", options: ["Raise your hand.", "Stand up.", "Sit down.", "Look at me."] },
+            
+            { id: "b4", en: "slide", prompt: "", icon: "🛝", category: "vocab", options: ["slide", "swing", "see-saw", "run"] },
+            { id: "b5", en: "apple", prompt: "", icon: "🍎", category: "vocab", options: ["apple", "banana", "orange", "grape"] },
 
-            { id: "b7", en: "forty", zh: "四十", icon: "🎧", category: "a1_num", options: ["40", "14", "4", "400"] },
-            { id: "b8", en: "fourteen", zh: "十四", icon: "🎧", category: "a1_num", options: ["14", "40", "4", "400"] },
-
-            { id: "c1", en: "Raise your hand.", zh: "舉手", icon: "✋", category: "a1_classroom", options: ["Raise your hand.", "Stand up.", "Sit down.", "Look at me."] },
-            { id: "c2", en: "Sit down.", zh: "坐下", icon: "🪑", category: "a1_classroom", options: ["Sit down.", "Stand up.", "Listen to me.", "Look at me."] },
-
-            { id: "p1", en: "cat", zh: "貓咪", icon: "🐱", category: "a1_phonics" },
-            { id: "p2", en: "fish", zh: "魚", icon: "🐟", category: "a1_phonics" }
+            { id: "p1", en: "cat", prompt: "", icon: "🐱", category: "phonics" },
+            { id: "p2", en: "fish", prompt: "", icon: "🐟", category: "phonics" }
         ];
 
         let users = JSON.parse(localStorage.getItem('garden_users')) || [
-            { id: "u1", name: "哥哥", plantName: "芽芽", days: 2, sun: 70, activeRoute: "a1_life" },
-            { id: "u2", name: "妹妹", plantName: "綠綠", days: 1, sun: 30, activeRoute: "a1_life" }
+            { id: "u1", name: "哥哥", plantName: "芽芽", days: 2, sun: 70, activeRoute: "vocab" },
+            { id: "u2", name: "妹妹", plantName: "綠綠", days: 1, sun: 30, activeRoute: "vocab" }
         ];
         let currentUserId = localStorage.getItem('garden_current_user') || "u1";
         let userVocab = JSON.parse(localStorage.getItem('garden_user_vocab')) || [];
+        let lastUploadTime = localStorage.getItem('garden_upload_time') || "";
 
         let currentQIndex = 0;
         let currentLessonQuestions = [];
@@ -423,8 +471,21 @@
 
         function getActiveVocabPool() {
             const currentUser = getCurrentUser();
-            const allVocab = [...builtinVocab, ...userVocab];
-            return allVocab.filter(v => v.category === currentUser.activeRoute);
+            
+            // 數字與顏色路線：自動生成
+            if (currentUser.activeRoute === "number") {
+                return generateNumberAndColorPool();
+            }
+
+            let allVocab = [...builtinVocab, ...userVocab];
+            let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
+
+            // 自然拼讀若沒有專屬上傳題庫，自動借用生活單字庫出題
+            if (currentUser.activeRoute === "phonics" && pool.length < 2) {
+                pool = allVocab.filter(v => v.category === "vocab");
+            }
+
+            return pool;
         }
 
         function startDailyLesson() {
@@ -437,7 +498,7 @@
             currentLessonQuestions = [];
             for (let i = 0; i < 10; i++) {
                 const randWord = pool[Math.floor(Math.random() * pool.length)];
-                const type = (randWord.en.includes(" ") || i % 2 === 0) ? 'listening' : 'spelling';
+                const type = (randWord.en.includes(" ") || randWord.prompt || i % 2 === 0) ? 'listening' : 'spelling';
                 currentLessonQuestions.push({ word: randWord, type: type });
             }
             currentQIndex = 0;
@@ -471,6 +532,14 @@
             document.getElementById('quiz-num-text').innerText = `${currentQIndex + 1}/10`;
             document.getElementById('target-icon').innerText = currentWord.icon || getAutoEmoji(currentWord.en, currentWord.zh);
 
+            const promptBox = document.getElementById('question-prompt');
+            if (currentWord.prompt) {
+                promptBox.innerText = currentWord.prompt;
+                promptBox.style.display = 'block';
+            } else {
+                promptBox.style.display = 'none';
+            }
+
             const grid = document.getElementById('options-grid');
             grid.innerHTML = '';
 
@@ -496,7 +565,8 @@
         }
 
         function speakQuestionOnly() {
-            speakText(currentWord.en);
+            const textToSpeak = currentWord.prompt || currentWord.en;
+            speakText(textToSpeak);
         }
 
         function checkListening(selected, btn) {
@@ -645,6 +715,9 @@
             document.getElementById('home-screen').classList.remove('hidden');
         }
 
+        function openHelpModal() { document.getElementById('help-modal').classList.remove('hidden'); }
+        function closeHelpModal() { document.getElementById('help-modal').classList.add('hidden'); }
+
         /* 韻文館 */
         function openChantModal() {
             const list = document.getElementById('chant-list');
@@ -751,7 +824,7 @@
             const plantName = document.getElementById('new-plant-name').value.trim();
             if (!name || !plantName) return alert("請填寫名字與植物名稱！");
 
-            const newUser = { id: "u_" + Date.now(), name, plantName, days: 0, sun: 0, activeRoute: "a1_life" };
+            const newUser = { id: "u_" + Date.now(), name, plantName, days: 0, sun: 0, activeRoute: "vocab" };
             users.push(newUser);
             currentUserId = newUser.id;
             localStorage.setItem('garden_users', JSON.stringify(users));
@@ -784,7 +857,7 @@
         }
         function closePathModal() { document.getElementById('path-modal').classList.add('hidden'); }
 
-        /* 智慧自動匹配 Emoji 函式 */
+        /* 自動 Emoji 匹配 */
         function getAutoEmoji(enText = "", zhText = "") {
             const cleanZh = zhText.trim().toLowerCase();
             const cleanEn = enText.trim().toLowerCase();
@@ -798,42 +871,71 @@
             return "📖";
         }
 
-        /* 家長 Modal 與三欄式 CSV 匯入 */
+        /* 家長 Modal 與檔名自動歸類 */
         function openAdminModal() {
             document.getElementById('admin-modal').classList.remove('hidden');
-            renderAdminWordList();
+            renderAdminSummary();
         }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
         
-        function renderAdminWordList() {
-            const list = document.getElementById('word-list');
+        function renderAdminSummary() {
+            const summaryList = document.getElementById('stat-summary-list');
             const allVocab = [...builtinVocab, ...userVocab];
-            document.getElementById('word-count').innerText = allVocab.length;
-            list.innerHTML = '';
-
-            allVocab.forEach((item) => {
+            
+            summaryList.innerHTML = '';
+            routes.forEach(r => {
+                let count = 0;
+                if (r.id === "number") {
+                    count = generateNumberAndColorPool().length; // 數字顏色為動態生成
+                } else {
+                    count = allVocab.filter(item => item.category === r.id).length;
+                }
                 const div = document.createElement('div');
-                div.className = 'word-list-item';
-                div.innerHTML = `<span><b>${item.en}</b> (圖: ${item.icon || getAutoEmoji(item.en, item.zh)}) [${item.category}]</span>`;
-                list.appendChild(div);
+                div.className = 'stat-card';
+                div.innerHTML = `<span>${r.name}</span> <span style="color:#2ed573;">${count} 題 ${r.id==="number" ? "(系統自動)" : ""}</span>`;
+                summaryList.appendChild(div);
             });
+
+            const msgBox = document.getElementById('upload-status-msg');
+            if (lastUploadTime) {
+                msgBox.style.color = '#2ed573';
+                msgBox.innerText = `最後匯入時間：${lastUploadTime}`;
+            } else {
+                msgBox.style.color = '#a4b0be';
+                msgBox.innerText = "尚未上傳自訂檔案";
+            }
         }
 
-        // CSV 三欄解析 (欄位A英文答案, 欄位B中文對應, 欄位C干擾選項)
         document.getElementById('csv-file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            const targetCategory = document.getElementById('upload-category-select').value;
+            const fileName = file.name.toLowerCase();
+            let category = "";
+
+            if (fileName.includes("vocab")) category = "vocab";
+            else if (fileName.includes("sentence")) category = "sentence";
+            else if (fileName.includes("phonics")) category = "phonics";
+            else {
+                alert("❌ 上傳失敗！檔名必須包含 vocab、sentence 或 phonics 其中之一喔！");
+                document.getElementById('upload-status-msg').style.color = '#ff7675';
+                document.getElementById('upload-status-msg').innerText = "上傳失敗：檔名不符規則";
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const text = evt.target.result;
-                parseAndSaveCsv(text, targetCategory);
+                try {
+                    const text = evt.target.result;
+                    parseAndSaveCsv(text, category, file.name);
+                } catch (err) {
+                    alert("❌ 檔案解析失敗，請確認是否為標準 CSV 格式！");
+                }
             };
             reader.readAsText(file, 'UTF-8');
         });
 
-        function parseAndSaveCsv(csvText, defaultCategory) {
+        function parseAndSaveCsv(csvText, category, fileName) {
             const lines = csvText.split('\n');
             let count = 0;
 
@@ -842,15 +944,22 @@
                 const cols = line.split(',').map(c => c.trim());
                 if (cols.length >= 1 && cols[0]) {
                     const en = cols[0];
-                    const zh = cols[1] || en;
+                    let prompt = "";
+                    let zh = "";
+
+                    if (cols[1] && (cols[1].includes('?') || cols[1].includes('What') || cols[1].includes('Listen'))) {
+                        prompt = cols[1];
+                    } else {
+                        zh = cols[1] || en;
+                    }
+
                     const icon = getAutoEmoji(en, zh);
 
                     let itemObj = {
                         id: "csv_" + Date.now() + "_" + idx,
-                        en, zh, icon, category: defaultCategory
+                        en, prompt, zh, icon, category
                     };
 
-                    // 如果 C 欄有指定干擾選項（以 / 分開）
                     if (cols[2]) {
                         const customOptions = cols[2].split('/').map(o => o.trim());
                         itemObj.options = [en, ...customOptions];
@@ -861,17 +970,22 @@
                 }
             });
 
+            const now = new Date();
+            lastUploadTime = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')} (${fileName})`;
+            
             localStorage.setItem('garden_user_vocab', JSON.stringify(userVocab));
-            alert(`🎉 成功匯入 ${count} 筆題目！`);
-            renderAdminWordList();
+            localStorage.setItem('garden_upload_time', lastUploadTime);
+
+            alert(`🎉 成功匯入 [${fileName}] 共 ${count} 筆題目！`);
+            renderAdminSummary();
         }
 
         function downloadSampleCsv() {
-            const csvContent = "data:text/csv;charset=utf-8,英文,中文,干擾選項(以斜線/分開)\nI see a table.,桌子,I see a desk. / I see a chair. / I see a bed.\nan octopus,章魚,a octopus / a dog / a cat\nslide,溜滑梯,swing / see-saw / run\nfourteen,十四 (14),40 / 4 / 400\n";
+            const csvContent = "data:text/csv;charset=utf-8,英文答案,題目提問或中文,干擾選項(以/分隔)\nI see a table.,What do you see?,I see a desk. / I see a chair. / I see a bed.\nslide,溜滑梯,swing / see-saw / run\n";
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "sample_words.csv");
+            link.setAttribute("download", "sentence_sample.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -880,8 +994,10 @@
         function clearUserVocab() {
             if (confirm("確定要清空所有自行匯入的題庫嗎？")) {
                 userVocab = [];
+                lastUploadTime = "";
                 localStorage.removeItem('garden_user_vocab');
-                renderAdminWordList();
+                localStorage.removeItem('garden_upload_time');
+                renderAdminSummary();
             }
         }
 
