@@ -58,7 +58,6 @@
         }
         .plant-avatar { font-size: 6.5rem; margin: 10px 0; transition: transform 0.3s; }
         
-        /* 澆水動畫 */
         .watering-can {
             position: absolute; top: 20%; right: -50px; font-size: 4rem; opacity: 0;
             transition: all 0.5s ease; pointer-events: none;
@@ -110,7 +109,7 @@
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
         .opt-btn {
             background: #fff; border: 3px solid #f1f2f6; border-bottom: 6px solid #e4e5e9;
-            border-radius: 18px; padding: 16px 8px; font-size: 1.25rem; font-weight: bold;
+            border-radius: 18px; padding: 16px 8px; font-size: 1.15rem; font-weight: bold;
             color: #333; cursor: pointer; transition: all 0.1s; display: flex;
             align-items: center; justify-content: center; text-align: center;
         }
@@ -118,19 +117,19 @@
         .opt-btn.wrong { background: #ff7675 !important; border-color: #d63031 !important; color: #fff; }
 
         /* Spelling */
-        .spelling-slots { display: flex; gap: 8px; justify-content: center; margin: 15px 0; min-height: 50px; }
+        .spelling-slots { display: flex; gap: 8px; justify-content: center; margin: 15px 0; min-height: 50px; flex-wrap: wrap; }
         .slot-box {
-            width: 45px; height: 50px; border-bottom: 4px solid #747d8c;
-            font-size: 2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; color: #2ed573;
+            width: 40px; height: 48px; border-bottom: 4px solid #747d8c;
+            font-size: 1.8rem; font-weight: bold; display: flex; justify-content: center; align-items: center; color: #2ed573;
         }
         .keyboard-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-top: 10px; }
         .key-btn {
             background: #fff; border: 2px solid #dfe4ea; border-bottom: 4px solid #ced6e0;
-            border-radius: 12px; width: 45px; height: 50px; font-size: 1.4rem; font-weight: bold; cursor: pointer;
+            border-radius: 12px; width: 42px; height: 48px; font-size: 1.3rem; font-weight: bold; cursor: pointer;
             display: flex; justify-content: center; align-items: center;
         }
         .action-key-btn {
-            background: #ffeaa7; border-color: #fdcb6e; border-bottom-color: #e1b12c; color: #d35400; font-size: 1rem; width: auto; padding: 0 15px;
+            background: #ffeaa7; border-color: #fdcb6e; border-bottom-color: #e1b12c; color: #d35400; font-size: 0.95rem; width: auto; padding: 0 12px;
         }
 
         /* Modals */
@@ -248,15 +247,15 @@
             <button class="start-btn" style="margin-top:15px; padding:12px; font-size:1.2rem;" onclick="checkSpelling()">確認拼字</button>
         </div>
 
-        <!-- 玩法說明 Modal -->
+        <!-- 說明 Modal -->
         <div id="help-modal" class="modal hidden">
             <div class="modal-content">
                 <h3 style="margin-top:0;">❓ 如何幫花園澆水？</h3>
                 <p style="font-size:0.95rem; line-height:1.6; color:#555;">
-                    1. 點擊<b>當前學習主題</b>選擇今天想練習的內容。<br>
-                    2. 點擊大大的 <b>START 🌿</b> 按鈕開始 10 題特訓。<br>
-                    3. 專心看圖聽發音，選出正確的英文答案。<br>
-                    4. 答對完成任務，幫小樹澆水看它一天天長大！
+                    1. 點擊<b>當前學習主題</b>選擇練習內容。<br>
+                    2. 點擊 <b>START 🌿</b> 開始 10 題特訓。<br>
+                    3. 專心看圖聽發音，選出正確英文答案。<br>
+                    4. 答對完成任務，幫小樹澆水成長！
                 </p>
                 <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeHelpModal()">懂了！</button>
             </div>
@@ -314,7 +313,6 @@
                 </div>
 
                 <div style="display:flex; gap:8px; margin-bottom:15px;">
-                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#747d8c; color:#fff; margin-bottom:0;" onclick="downloadSampleCsv()">📥 下載範本</button>
                     <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 清空匯入檔</button>
                 </div>
 
@@ -335,17 +333,40 @@
             { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲" }
         ];
 
-        // 自動 Emoji 對應字典
+        // 完整 Emoji 超強自動配對字典
         const emojiDictionary = {
-            "slide": "🛝", "溜滑梯": "🛝", "swing": "🛞", "盪鞦韆": "🛞",
-            "table": "🪵", "桌子": "🪵", "desk": "🖥️", "書桌": "🖥️", "chair": "🪑", "椅子": "🪑",
-            "octopus": "🐙", "章魚": "🐙", "apple": "🍎", "蘋果": "🍎", "banana": "🍌", "香蕉": "🍌",
-            "dog": "🐶", "小狗": "🐶", "cat": "🐱", "貓咪": "🐱", "fish": "🐟", "魚": "🐟",
-            "book": "📖", "書本": "📖", "pencil": "✏️", "鉛筆": "✏️", "red": "🔴", "藍色": "🔵",
-            "raise your hand.": "✋", "sit down.": "🪑", "stand up.": "🚶"
+            "catch": "✊", "抓": "✊", "sit": "🪑", "坐": "🪑", "stand up": "🚶", "站起來": "🚶",
+            "roll": "🌀", "打滾": "🌀", "shake": "🤝", "握手": "🤝", "hug": "🫂", "擁抱": "🫂",
+            "bag": "👜", "包包": "👜", "backpack": "🎒", "後背包": "🎒", "mat": "🧘", "墊子": "🧘",
+            "bed": "🛏️", "床": "🛏️", "desk": "🖥️", "書桌": "🖥️", "teddy bear": "🧸", "泰迪熊": "🧸",
+            "speaker": "🔊", "喇叭": "🔊", "eat": "🍎", "吃": "🍎", "brush": "🪥", "刷": "🪥",
+            "teeth": "🦷", "牙齒": "🦷", "cookie": "🍪", "餅乾": "🍪", "ice cream": "🍦", "冰淇淋": "🍦",
+            "clean": "✨", "乾淨的": "✨", "board": "📋", "黑板": "📋", "clock": "⏰", "時鐘": "⏰",
+            "map": "🗺️", "地圖": "🗺️", "classroom": "🏫", "教室": "🏫", "chair": "🪑", "椅子": "🪑",
+            "book": "📖", "書本": "📖", "music": "🎵", "音樂": "🎵", "art": "🎨", "美術": "🎨",
+            "p.e.": "⚽", "體育": "⚽", "english": "🔤", "英文": "🔤", "sing": "🎤", "唱歌": "🎤",
+            "paint": "🖌️", "畫畫": "🖌️", "speak": "🗣️", "說話": "🗣️", "ride": "🚴", "騎": "🚴",
+            "bike": "🚲", "腳踏車": "🚲", "horse": "🐎", "馬": "🐎", "kickboard": "🛴", "滑板車": "🛴",
+            "skateboard": "🛹", "滑板": "🛹", "doctor": "👨‍⚕️", "醫生": "👨‍⚕️", "teacher": "👩‍🏫", "老師": "👩‍🏫",
+            "zookeeper": "🦁", "動物園管理員": "🦁", "hospital": "🏥", "醫院": "🏥", "home": "🏡", "家": "🏡",
+            "bird": "🐦", "鳥": "🐦", "flower": "💐", "花": "💐", "butterfly": "🦋", "蝴蝶": "🦋",
+            "grass": "🌱", "草": "🌱", "spring": "🌸", "春天": "🌸", "garden": "🏡", "花園": "🏡",
+            "elephant": "🐘", "大象": "🐘", "fish": "🐟", "魚": "🐟", "hamburger": "🍔", "漢堡": "🍔",
+            "jam": "🍓", "果醬": "🍓", "koala": "🐨", "無尾熊": "🐨", "lion": "🦁", "獅子": "🦁",
+            "monkey": "🐒", "猴子": "🐒", "nuts": "🥜", "堅果": "🥜", "rabbit": "🐰", "兔子": "🐰",
+            "snake": "🐍", "蛇": "🐍", "tiger": "🐯", "老虎": "🐯", "umbrella": "☂️", "雨傘": "☂️",
+            "van": "🚐", "廂型車": "🚐", "wolf": "🐺", "大狼": "🐺", "fox": "🦊", "狐狸": "🦊",
+            "yo-yo": "🪀", "溜溜球": "🪀", "zebra": "🦓", "斑馬": "🦓", "leg": "🦵", "腿": "🦵",
+            "net": "🕸️", "網子": "🕸️", "pen": "✏️", "筆": "✏️", "six": "6️⃣", "六": "6️⃣",
+            "pig": "🐷", "豬": "🐷", "milk": "🥛", "牛奶": "🥛", "mop": "🧹", "拖把": "🧹",
+            "cup": "🥤", "杯子": "🥤", "sun": "☀️", "太陽": "☀️", "spoon": "🥄", "湯匙": "🥄",
+            "stamp": "✉️", "郵票": "✉️", "skunk": "🦨", "臭鼬": "🦨", "student": "🧑‍🎓", "學生": "🧑‍🎓",
+            "snail": "🐌", "蝸牛": "🐌", "swim": "🏊", "游泳": "🏊", "swing": "🛞", "盪鞦韆": "🛞",
+            "blouse": "👚", "女襯衫": "👚", "plate": "🍽️", "盤子": "🍽️", "glass": "🥃", "玻璃杯": "🥃",
+            "flag": "🚩", "旗子": "🚩", "slide": "🛝", "溜滑梯": "🛝", "table": "🪵", "桌子": "🪵"
         };
 
-        // 自動生成數字與顏色題（免 CSV，封鎖百，只留1~20與整十 20~90）
+        // 自動生成數字與顏色題 (免 CSV，封鎖百)
         function generateNumberAndColorPool() {
             const pool = [];
             const numWords = {
@@ -354,7 +375,6 @@
                 30:"thirty", 40:"forty", 50:"fifty", 60:"sixty", 70:"seventy", 80:"eighty", 90:"ninety"
             };
 
-            // 1. 生成數字題
             for (let num in numWords) {
                 const en = numWords[num];
                 let distractor1 = (parseInt(num) < 20 && parseInt(num) > 12) ? (parseInt(num) - 10) * 10 : parseInt(num) + 10;
@@ -362,32 +382,20 @@
                 
                 pool.push({
                     id: "num_gen_" + num,
-                    en: en,
-                    prompt: "",
-                    icon: "🎧",
-                    category: "number",
+                    en: en, prompt: "", icon: "🎧", category: "number",
                     options: [num.toString(), distractor1.toString(), (parseInt(num)+1).toString(), "5"]
                 });
             }
 
-            // 2. 生成顏色題
             const colors = [
-                { en: "red", zh: "紅色", icon: "🔴" },
-                { en: "orange", zh: "橘色", icon: "🟠" },
-                { en: "yellow", zh: "黃色", icon: "🟡" },
-                { en: "green", zh: "綠色", icon: "🟢" },
-                { en: "blue", zh: "藍色", icon: "🔵" },
-                { en: "purple", zh: "紫色", icon: "🟣" },
-                { en: "rainbow", zh: "彩虹", icon: "🌈" }
+                { en: "red", icon: "🔴" }, { en: "orange", icon: "🟠" }, { en: "yellow", icon: "🟡" },
+                { en: "green", icon: "🟢" }, { en: "blue", icon: "🔵" }, { en: "purple", icon: "🟣" },
+                { en: "rainbow", icon: "🌈" }
             ];
 
             colors.forEach((c, idx) => {
                 pool.push({
-                    id: "color_gen_" + idx,
-                    en: c.en,
-                    prompt: "",
-                    icon: c.icon,
-                    category: "number",
+                    id: "color_gen_" + idx, en: c.en, prompt: "", icon: c.icon, category: "number",
                     options: [c.en, "red", "blue", "yellow"].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4)
                 });
             });
@@ -401,17 +409,10 @@
             { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
         ];
 
-        // 內建官方題庫
         const builtinVocab = [
             { id: "b1", en: "I see a table.", prompt: "What do you see?", icon: "🪵", category: "sentence", options: ["I see a table.", "I see a desk.", "I see a chair.", "I see a bed."] },
-            { id: "b2", en: "I see a desk.", prompt: "What do you see?", icon: "🖥️", category: "sentence", options: ["I see a desk.", "I see a table.", "I see a chair.", "I see a bed."] },
-            { id: "b3", en: "Raise your hand.", prompt: "Listen and do:", icon: "✋", category: "sentence", options: ["Raise your hand.", "Stand up.", "Sit down.", "Look at me."] },
-            
             { id: "b4", en: "slide", prompt: "", icon: "🛝", category: "vocab", options: ["slide", "swing", "see-saw", "run"] },
-            { id: "b5", en: "apple", prompt: "", icon: "🍎", category: "vocab", options: ["apple", "banana", "orange", "grape"] },
-
-            { id: "p1", en: "cat", prompt: "", icon: "🐱", category: "phonics" },
-            { id: "p2", en: "fish", prompt: "", icon: "🐟", category: "phonics" }
+            { id: "b5", en: "apple", prompt: "", icon: "🍎", category: "vocab", options: ["apple", "banana", "orange", "grape"] }
         ];
 
         let users = JSON.parse(localStorage.getItem('garden_users')) || [
@@ -471,20 +472,14 @@
 
         function getActiveVocabPool() {
             const currentUser = getCurrentUser();
-            
-            // 數字與顏色路線：自動生成
-            if (currentUser.activeRoute === "number") {
-                return generateNumberAndColorPool();
-            }
+            if (currentUser.activeRoute === "number") return generateNumberAndColorPool();
 
             let allVocab = [...builtinVocab, ...userVocab];
             let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
 
-            // 自然拼讀若沒有專屬上傳題庫，自動借用生活單字庫出題
             if (currentUser.activeRoute === "phonics" && pool.length < 2) {
                 pool = allVocab.filter(v => v.category === "vocab");
             }
-
             return pool;
         }
 
@@ -565,24 +560,22 @@
         }
 
         function speakQuestionOnly() {
-            const textToSpeak = currentWord.prompt || currentWord.en;
+            let textToSpeak = currentWord.prompt || currentWord.en;
+            if (textToSpeak.includes(']')) {
+                textToSpeak = textToSpeak.split(']')[1].trim();
+            }
             speakText(textToSpeak);
         }
 
         function checkListening(selected, btn) {
             if (isAnsweringLocked) return;
-
             const correctAns = currentWord.options ? currentWord.options[0] : currentWord.en;
 
             if (selected === correctAns) {
                 isAnsweringLocked = true;
                 btn.classList.add('correct');
-
                 speakText(selected, () => {
-                    setTimeout(() => {
-                        currentQIndex++;
-                        loadQuestion();
-                    }, 400);
+                    setTimeout(() => { currentQIndex++; loadQuestion(); }, 400);
                 });
             } else {
                 btn.classList.add('wrong');
@@ -729,12 +722,9 @@
 
                 const div = document.createElement('a');
                 div.className = 'chant-item';
-                div.href = ytLink;
-                div.target = '_blank';
+                div.href = ytLink; div.target = '_blank';
                 div.innerHTML = `
-                    <div style="font-size:1.1rem; font-weight:bold; color:#d35400;">
-                        ${c.icon} ${c.title}
-                    </div>
+                    <div style="font-size:1.1rem; font-weight:bold; color:#d35400;">${c.icon} ${c.title}</div>
                     <div class="yt-thumb-card" style="background-image: url('${thumbUrl}');">
                         <div class="play-play-icon">▶️</div>
                     </div>
@@ -857,7 +847,7 @@
         }
         function closePathModal() { document.getElementById('path-modal').classList.add('hidden'); }
 
-        /* 自動 Emoji 匹配 */
+        /* 自動 Emoji 智慧匹配機制 */
         function getAutoEmoji(enText = "", zhText = "") {
             const cleanZh = zhText.trim().toLowerCase();
             const cleanEn = enText.trim().toLowerCase();
@@ -866,7 +856,7 @@
             if (cleanEn && emojiDictionary[cleanEn]) return emojiDictionary[cleanEn];
 
             for (let key in emojiDictionary) {
-                if (cleanZh.includes(key) || cleanEn.includes(key)) return emojiDictionary[key];
+                if (cleanEn.includes(key) || cleanZh.includes(key)) return emojiDictionary[key];
             }
             return "📖";
         }
@@ -886,7 +876,7 @@
             routes.forEach(r => {
                 let count = 0;
                 if (r.id === "number") {
-                    count = generateNumberAndColorPool().length; // 數字顏色為動態生成
+                    count = generateNumberAndColorPool().length;
                 } else {
                     count = allVocab.filter(item => item.category === r.id).length;
                 }
@@ -947,7 +937,7 @@
                     let prompt = "";
                     let zh = "";
 
-                    if (cols[1] && (cols[1].includes('?') || cols[1].includes('What') || cols[1].includes('Listen'))) {
+                    if (cols[1] && (cols[1].includes('?') || cols[1].includes('What') || cols[1].includes('Listen') || cols[1].includes('['))) {
                         prompt = cols[1];
                     } else {
                         zh = cols[1] || en;
@@ -978,17 +968,6 @@
 
             alert(`🎉 成功匯入 [${fileName}] 共 ${count} 筆題目！`);
             renderAdminSummary();
-        }
-
-        function downloadSampleCsv() {
-            const csvContent = "data:text/csv;charset=utf-8,英文答案,題目提問或中文,干擾選項(以/分隔)\nI see a table.,What do you see?,I see a desk. / I see a chair. / I see a bed.\nslide,溜滑梯,swing / see-saw / run\n";
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "sentence_sample.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function clearUserVocab() {
