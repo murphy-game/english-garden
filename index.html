@@ -297,23 +297,22 @@
         <!-- 家長管理 Modal -->
         <div id="admin-modal" class="modal hidden">
             <div class="modal-content">
-                <h3 style="margin-top:0;">⚙️ 家長管理 - 檔案匯入</h3>
+                <h3 style="margin-top:0;">⚙️ 家長管理 - 自訂題庫</h3>
                 
                 <div class="file-upload-box">
-                    <h4 style="margin:0 0 8px 0; color:#2ed573;">📁 上傳 CSV 題庫檔</h4>
+                    <h4 style="margin:0 0 8px 0; color:#2ed573;">📁 上傳 CSV 題庫檔 (選擇性擴充)</h4>
                     <p style="font-size:0.8rem; color:#555; margin-bottom:10px; line-height:1.4;">
-                        系統會根據<b>檔名自動歸類</b>：<br>
+                        系統預設已內建常見基礎題庫！若想配合學校進度擴充，可上傳：<br>
                         • <b>vocab.csv</b> ➔ 生活單字<br>
                         • <b>sentence.csv</b> ➔ 生活句型 (含教室用語)<br>
-                        • <b>phonics.csv</b> ➔ 自然拼讀<br>
-                        <small style="color:#888;">(數字與顏色由系統自動生成，免上傳檔)</small>
+                        • <b>phonics.csv</b> ➔ 自然拼讀
                     </p>
                     <input type="file" id="csv-file-input" accept=".csv" style="font-size:0.9rem; width:100%;">
                     <div id="upload-status-msg" style="font-size:0.8rem; font-weight:bold; margin-top:8px;"></div>
                 </div>
 
                 <div style="display:flex; gap:8px; margin-bottom:15px;">
-                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 清空匯入檔</button>
+                    <button class="start-btn" style="padding:8px; font-size:0.85rem; background:#ff7675; color:#fff; margin-bottom:0;" onclick="clearUserVocab()">🗑️ 重置為預設題庫</button>
                 </div>
 
                 <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
@@ -466,10 +465,53 @@
             { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
         ];
 
+        // 開箱即用：豐富的預設內建基礎題庫 (未上傳 CSV 時直接可用)
         const builtinVocab = [
-            { id: "b1", en: "I see a table.", prompt: "What do you see?", icon: "🪵", category: "sentence", options: ["I see a table.", "I see a desk.", "I see a chair.", "I see a bed."] },
-            { id: "b4", en: "slide", prompt: "", icon: "🛝", category: "vocab", options: ["slide", "swing", "see-saw", "run"] },
-            { id: "b5", en: "apple", prompt: "", icon: "🍎", category: "vocab", options: ["apple", "banana", "orange", "grape"] }
+            // --- 生活單字 ---
+            { id: "b_v1", en: "apple", zh: "蘋果", icon: "🍎", category: "vocab" },
+            { id: "b_v2", en: "banana", zh: "香蕉", icon: "🍌", category: "vocab" },
+            { id: "b_v3", en: "cat", zh: "貓咪", icon: "🐱", category: "vocab" },
+            { id: "b_v4", en: "dog", zh: "小狗", icon: "🐶", category: "vocab" },
+            { id: "b_v5", en: "rabbit", zh: "兔子", icon: "🐰", category: "vocab" },
+            { id: "b_v6", en: "book", zh: "書本", icon: "📖", category: "vocab" },
+            { id: "b_v7", en: "pencil", zh: "鉛筆", icon: "✏️", category: "vocab" },
+            { id: "b_v8", en: "chair", zh: "椅子", icon: "🪑", category: "vocab" },
+            { id: "b_v9", en: "desk", zh: "書桌", icon: "🛋️", category: "vocab" },
+            { id: "b_v10", en: "milk", zh: "牛奶", icon: "🥛", category: "vocab" },
+            { id: "b_v11", en: "sun", zh: "太陽", icon: "☀️", category: "vocab" },
+            { id: "b_v12", en: "flower", zh: "花朵", icon: "💐", category: "vocab" },
+            { id: "b_v13", en: "fish", zh: "魚", icon: "🐟", category: "vocab" },
+            { id: "b_v14", en: "bird", zh: "小鳥", icon: "🐦", category: "vocab" },
+            { id: "b_v15", en: "slide", zh: "溜滑梯", icon: "🛝", category: "vocab" },
+            { id: "b_v16", en: "swing", zh: "盪鞦韆", icon: "🛝", category: "vocab" },
+            { id: "b_v17", en: "cookie", zh: "餅乾", icon: "🍪", category: "vocab" },
+            { id: "b_v18", en: "car", zh: "汽車", icon: "🚗", category: "vocab" },
+            { id: "b_v19", en: "bag", zh: "包包", icon: "👜", category: "vocab" },
+            { id: "b_v20", en: "clock", zh: "時鐘", icon: "⏰", category: "vocab" },
+
+            // --- 生活句型 ---
+            { id: "b_s1", en: "I see a table.", prompt: "What do you see?", icon: "🪵", category: "sentence" },
+            { id: "b_s2", en: "I am fine.", prompt: "How are you?", icon: "😊", category: "sentence" },
+            { id: "b_s3", en: "My name is Emma.", prompt: "What's your name?", icon: "👧", category: "sentence" },
+            { id: "b_s4", en: "I am 7 years old.", prompt: "How old are you?", icon: "🎂", category: "sentence" },
+            { id: "b_s5", en: "I can ride a bike.", prompt: "What can you do?", icon: "🚲", category: "sentence" },
+            { id: "b_s6", en: "I like to sing.", prompt: "What do you like to do?", icon: "🎤", category: "sentence" },
+            { id: "b_s7", en: "Yes, I am happy.", prompt: "Are you happy?", icon: "😄", category: "sentence" },
+            { id: "b_s8", en: "Thank you.", prompt: "Here is your hamburger.", icon: "🍔", category: "sentence" },
+            { id: "b_s9", en: "You are welcome.", prompt: "Thank you.", icon: "🤝", category: "sentence" },
+            { id: "b_s10", en: "It is a clock.", prompt: "What is it?", icon: "⏰", category: "sentence" },
+
+            // --- 自然拼讀 CVC ---
+            { id: "b_p1", en: "cat", zh: "短母音 a", icon: "🐱", category: "phonics" },
+            { id: "b_p2", en: "pen", zh: "短母音 e", icon: "✏️", category: "phonics" },
+            { id: "b_p3", en: "pig", zh: "短母音 i", icon: "🐷", category: "phonics" },
+            { id: "b_p4", en: "mop", zh: "短母音 o", icon: "🧹", category: "phonics" },
+            { id: "b_p5", en: "cup", zh: "短母音 u", icon: "🥤", category: "phonics" },
+            { id: "b_p6", en: "bag", zh: "短母音 a", icon: "👜", category: "phonics" },
+            { id: "b_p7", en: "bed", zh: "短母音 e", icon: "🛏️", category: "phonics" },
+            { id: "b_p8", en: "pin", zh: "短母音 i", icon: "📌", category: "phonics" },
+            { id: "b_p9", en: "dog", zh: "短母音 o", icon: "🐶", category: "phonics" },
+            { id: "b_p10", en: "bus", zh: "短母音 u", icon: "🚌", category: "phonics" }
         ];
 
         let users = JSON.parse(localStorage.getItem('garden_users')) || [
@@ -1069,7 +1111,7 @@
                 msgBox.innerText = `最後匯入時間：${lastUploadTime}`;
             } else {
                 msgBox.style.color = '#a4b0be';
-                msgBox.innerText = "尚未上傳自訂檔案";
+                msgBox.innerText = "已載入內建基礎題庫 (可上傳 CSV 擴充)";
             }
         }
 
@@ -1148,7 +1190,7 @@
         }
 
         function clearUserVocab() {
-            if (confirm("確定要清空所有自行匯入的題庫嗎？")) {
+            if (confirm("確定要重置為預設題庫嗎？")) {
                 userVocab = [];
                 lastUploadTime = "";
                 seenHistory = {};
