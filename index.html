@@ -191,7 +191,7 @@
 
                 <h2 style="margin:5px 0;"><span id="plant-name">芽芽</span> 的字樹花園</h2>
                 <p style="color:#a4b0be; font-size:0.85rem; margin-top:0;">完成今天的練習，幫花園澆水 🌿</p>
-                <div class="streak-tag">🌱 <span id="plant-stage-name">萌芽種子</span> • 累積 <span id="water-days">2</span> 天</div>
+                <div class="streak-tag">🌱 <span id="plant-stage-name">小嫩芽</span> • 累積 <span id="water-days">2</span> 天</div>
                 <div class="plant-avatar" id="plant-avatar">🌱</div>
             </div>
 
@@ -555,6 +555,7 @@
 
         function getCurrentUser() { return users.find(u => u.id === currentUserId) || users[0]; }
 
+        // 升級：直觀視覺體積層層放大 UI 機制 (9 大階段)
         function updateGardenUI() {
             const currentUser = getCurrentUser();
             document.getElementById('current-user-name').innerText = currentUser.name;
@@ -562,9 +563,17 @@
             document.getElementById('plant-name').innerText = currentUser.plantName;
             document.getElementById('water-days').innerText = currentUser.days;
 
-            let icon = "🌱", stageName = "萌芽種子";
-            if (currentUser.days >= 7) { icon = "🌻"; stageName = "綻放花朵"; }
-            else if (currentUser.days >= 3) { icon = "🌿"; stageName = "成長幼苗"; }
+            let icon = "🫘", stageName = "小種子";
+            const d = currentUser.days;
+
+            if (d >= 14) { icon = "🏰"; stageName = "夢幻城堡花園"; }
+            else if (d >= 10) { icon = "🌴"; stageName = "巨型椰椰樹"; }
+            else if (d >= 7) { icon = "🌲"; stageName = "參天大樹"; }
+            else if (d >= 6) { icon = "🌳"; stageName = "茂密小樹"; }
+            else if (d >= 5) { icon = "🎋"; stageName = "高竹苗"; }
+            else if (d >= 4) { icon = "🪴"; stageName = "小盆栽"; }
+            else if (d >= 3) { icon = "🌿"; stageName = "綠幼苗"; }
+            else if (d >= 2) { icon = "🌱"; stageName = "小嫩芽"; }
 
             document.getElementById('plant-avatar').innerText = icon;
             document.getElementById('plant-stage-name').innerText = stageName;
@@ -587,7 +596,7 @@
             return pool;
         }
 
-        // 升級：精準出題算法（個人化錯題加強 + 跨天不重複）
+        // 精準出題算法（個人化錯題加強 + 跨天不重複）
         function startDailyLesson() {
             const pool = getActiveVocabPool();
             if (pool.length < 2) {
