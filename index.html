@@ -103,7 +103,7 @@
             background: #fff; border-radius: 20px; width: 100%; padding: 20px 15px;
             text-align: center; border: 2px solid #f1f2f6; box-shadow: 0 8px 20px rgba(0,0,0,0.04); margin-bottom: 15px;
         }
-        .image-hint { font-size: 4.5rem; margin: 5px 0; line-height: 1; }
+        .image-hint { font-size: 4.5rem; margin: 5px 0; line-height: 1; display: flex; justify-content: center; align-items: center; }
         .question-prompt { font-size: 1.25rem; font-weight: bold; color: #2f3640; margin-bottom: 8px; }
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -333,40 +333,97 @@
             { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲" }
         ];
 
-        // 完整 Emoji 超強自動配對字典
+        // 常用對應字典
         const emojiDictionary = {
-            "catch": "✊", "抓": "✊", "sit": "🪑", "坐": "🪑", "stand up": "🚶", "站起來": "🚶",
-            "roll": "🌀", "打滾": "🌀", "shake": "🤝", "握手": "🤝", "hug": "🫂", "擁抱": "🫂",
-            "bag": "👜", "包包": "👜", "backpack": "🎒", "後背包": "🎒", "mat": "🧘", "墊子": "🧘",
-            "bed": "🛏️", "床": "🛏️", "desk": "🖥️", "書桌": "🖥️", "teddy bear": "🧸", "泰迪熊": "🧸",
-            "speaker": "🔊", "喇叭": "🔊", "eat": "🍎", "吃": "🍎", "brush": "🪥", "刷": "🪥",
-            "teeth": "🦷", "牙齒": "🦷", "cookie": "🍪", "餅乾": "🍪", "ice cream": "🍦", "冰淇淋": "🍦",
-            "clean": "✨", "乾淨的": "✨", "board": "📋", "黑板": "📋", "clock": "⏰", "時鐘": "⏰",
-            "map": "🗺️", "地圖": "🗺️", "classroom": "🏫", "教室": "🏫", "chair": "🪑", "椅子": "🪑",
-            "book": "📖", "書本": "📖", "music": "🎵", "音樂": "🎵", "art": "🎨", "美術": "🎨",
-            "p.e.": "⚽", "體育": "⚽", "english": "🔤", "英文": "🔤", "sing": "🎤", "唱歌": "🎤",
-            "paint": "🖌️", "畫畫": "🖌️", "speak": "🗣️", "說話": "🗣️", "ride": "🚴", "騎": "🚴",
-            "bike": "🚲", "腳踏車": "🚲", "horse": "🐎", "馬": "🐎", "kickboard": "🛴", "滑板車": "🛴",
-            "skateboard": "🛹", "滑板": "🛹", "doctor": "👨‍⚕️", "醫生": "👨‍⚕️", "teacher": "👩‍🏫", "老師": "👩‍🏫",
-            "zookeeper": "🦁", "動物園管理員": "🦁", "hospital": "🏥", "醫院": "🏥", "home": "🏡", "家": "🏡",
-            "bird": "🐦", "鳥": "🐦", "flower": "💐", "花": "💐", "butterfly": "🦋", "蝴蝶": "🦋",
-            "grass": "🌱", "草": "🌱", "spring": "🌸", "春天": "🌸", "garden": "🏡", "花園": "🏡",
-            "elephant": "🐘", "大象": "🐘", "fish": "🐟", "魚": "🐟", "hamburger": "🍔", "漢堡": "🍔",
-            "jam": "🍓", "果醬": "🍓", "koala": "🐨", "無尾熊": "🐨", "lion": "🦁", "獅子": "🦁",
-            "monkey": "🐒", "猴子": "🐒", "nuts": "🥜", "堅果": "🥜", "rabbit": "🐰", "兔子": "🐰",
-            "snake": "🐍", "蛇": "🐍", "tiger": "🐯", "老虎": "🐯", "umbrella": "☂️", "雨傘": "☂️",
-            "van": "🚐", "廂型車": "🚐", "wolf": "🐺", "大狼": "🐺", "fox": "🦊", "狐狸": "🦊",
-            "yo-yo": "🪀", "溜溜球": "🪀", "zebra": "🦓", "斑馬": "🦓", "leg": "🦵", "腿": "🦵",
-            "net": "🕸️", "網子": "🕸️", "pen": "✏️", "筆": "✏️", "six": "6️⃣", "六": "6️⃣",
-            "pig": "🐷", "豬": "🐷", "milk": "🥛", "牛奶": "🥛", "mop": "🧹", "拖把": "🧹",
-            "cup": "🥤", "杯子": "🥤", "sun": "☀️", "太陽": "☀️", "spoon": "🥄", "湯匙": "🥄",
-            "stamp": "✉️", "郵票": "✉️", "skunk": "🦨", "臭鼬": "🦨", "student": "🧑‍🎓", "學生": "🧑‍🎓",
-            "snail": "🐌", "蝸牛": "🐌", "swim": "🏊", "游泳": "🏊", "swing": "🛞", "盪鞦韆": "🛞",
-            "blouse": "👚", "女襯衫": "👚", "plate": "🍽️", "盤子": "🍽️", "glass": "🥃", "玻璃杯": "🥃",
-            "flag": "🚩", "旗子": "🚩", "slide": "🛝", "溜滑梯": "🛝", "table": "🪵", "桌子": "🪵"
+            "搖晃": "🫨", "搖": "🫨", "shake": "🫨",
+            "打滾": "🐕", "滾": "🐕", "roll": "🐕",
+            "墊子": "🚪", "地墊": "🚪", "mat": "🚪",
+            "坐下": "🪑", "坐": "🪑", "sit down": "🪑", "sit": "🪑",
+            "站起來": "🚶", "站": "🚶", "stand up": "🚶", "stand": "🚶",
+            "抓": "✊", "catch": "✊",
+            "握手": "🤝",
+            "擁抱": "🫂", "hug": "🫂",
+            "包包": "👜", "bag": "👜",
+            "後背包": "🎒", "backpack": "🎒",
+            "床": "🛏️", "bed": "🛏️",
+            "書桌": "🛋️", "桌子": "🛋️", "desk": "🛋️", "table": "🪵",
+            "泰迪熊": "🧸", "teddy bear": "🧸",
+            "喇叭": "🔊", "speaker": "🔊",
+            "吃": "😋", "eat": "😋",
+            "刷": "🪥", "brush": "🪥",
+            "牙齒": "🦷", "teeth": "🦷",
+            "餅乾": "🍪", "cookie": "🍪",
+            "冰淇淋": "🍦", "ice cream": "🍦",
+            "乾淨的": "✨", "乾淨": "✨", "clean": "✨",
+            "黑板": "📋", "board": "📋",
+            "時鐘": "⏰", "clock": "⏰",
+            "地圖": "🗺️", "map": "🗺️",
+            "教室": "🏫", "classroom": "🏫",
+            "椅子": "🪑", "chair": "🪑",
+            "書本": "📖", "book": "📖",
+            "音樂": "🎵", "music": "🎵",
+            "美術": "🎨", "art": "🎨",
+            "體育": "⚽", "p.e.": "⚽",
+            "英文": "🔤", "english": "🔤",
+            "唱歌": "🎤", "sing": "🎤",
+            "畫畫": "🖌️", "paint": "🖌️",
+            "說話": "🗣️", "speak": "🗣️",
+            "騎": "🚴", "ride": "🚴",
+            "腳踏車": "🚲", "bike": "🚲",
+            "馬": "🐎", "horse": "🐎",
+            "滑板車": "🛴", "kickboard": "🛴",
+            "滑板": "🛹", "skateboard": "🛹",
+            "醫生": "👨‍⚕️", "doctor": "👨‍⚕️",
+            "老師": "👩‍🏫", "teacher": "👩‍🏫",
+            "動物園管理員": "🦁", "zookeeper": "🦁",
+            "醫院": "🏥", "hospital": "🏥",
+            "家": "🏡", "home": "🏡",
+            "鳥": "🐦", "bird": "🐦",
+            "花": "💐", "花朵": "💐", "flower": "💐",
+            "蝴蝶": "🦋", "butterfly": "🦋",
+            "草": "🌱", "grass": "🌱",
+            "春天": "🌸", "spring": "🌸",
+            "花園": "🏡", "garden": "🏡",
+            "大象": "🐘", "elephant": "🐘",
+            "魚": "🐟", "fish": "🐟",
+            "漢堡": "🍔", "hamburger": "🍔",
+            "果醬": "🍓", "jam": "🍓",
+            "無尾熊": "🐨", "koala": "🐨",
+            "獅子": "🦁", "lion": "🦁",
+            "猴子": "🐒", "monkey": "🐒",
+            "堅果": "🥜", "nuts": "🥜",
+            "兔子": "🐰", "rabbit": "🐰",
+            "蛇": "🐍", "snake": "🐍",
+            "老虎": "🐯", "tiger": "🐯",
+            "雨傘": "☂️", "umbrella": "☂️",
+            "廂型車": "🚐", "van": "🚐",
+            "大狼": "🐺", "狼": "🐺", "wolf": "🐺",
+            "狐狸": "🦊", "fox": "🦊",
+            "溜溜球": "🪀", "yo-yo": "🪀",
+            "斑馬": "🦓", "zebra": "🦓",
+            "腿": "🦵", "leg": "🦵",
+            "網子": "🕸️", "net": "🕸️",
+            "筆": "✏️", "pen": "✏️",
+            "六": "6️⃣", "six": "6️⃣",
+            "豬": "🐷", "pig": "🐷",
+            "牛奶": "🥛", "milk": "🥛",
+            "拖把": "🧹", "mop": "🧹",
+            "杯子": "🥤", "cup": "🥤",
+            "太陽": "☀️", "sun": "☀️",
+            "湯匙": "🥄", "spoon": "🥄",
+            "郵票": "✉️", "stamp": "✉️",
+            "臭鼬": "🦨", "skunk": "🦨",
+            "學生": "🧑‍🎓", "student": "🧑‍🎓",
+            "蝸牛": "🐌", "snail": "🐌",
+            "游泳": "🏊", "swim": "🏊",
+            "盪鞦韆": "🛝", "swing": "🛝",
+            "女襯衫": "👚", "女短上衣": "👚", "blouse": "👚",
+            "盤子": "🍽️", "plate": "🍽️",
+            "玻璃杯": "🥃", "glass": "🥃",
+            "旗子": "🚩", "flag": "🚩",
+            "溜滑梯": "🛝", "slide": "🛝"
         };
 
-        // 自動生成數字與顏色題 (免 CSV，封鎖百)
         function generateNumberAndColorPool() {
             const pool = [];
             const numWords = {
@@ -422,6 +479,11 @@
         let currentUserId = localStorage.getItem('garden_current_user') || "u1";
         let userVocab = JSON.parse(localStorage.getItem('garden_user_vocab')) || [];
         let lastUploadTime = localStorage.getItem('garden_upload_time') || "";
+
+        // 跨天做題紀錄：記錄看過的題目 id
+        let seenHistory = JSON.parse(localStorage.getItem('garden_seen_history')) || {};
+        // 角色獨立錯題本：記錄每個角色答錯的單字 id
+        let wrongWordsHistory = JSON.parse(localStorage.getItem('garden_wrong_history')) || {};
 
         let currentQIndex = 0;
         let currentLessonQuestions = [];
@@ -483,6 +545,7 @@
             return pool;
         }
 
+        // 升級：精準出題算法（個人化錯題加強 + 跨天不重複）
         function startDailyLesson() {
             const pool = getActiveVocabPool();
             if (pool.length < 2) {
@@ -490,12 +553,60 @@
                 return;
             }
 
-            currentLessonQuestions = [];
-            for (let i = 0; i < 10; i++) {
-                const randWord = pool[Math.floor(Math.random() * pool.length)];
-                const type = (randWord.en.includes(" ") || randWord.prompt || i % 2 === 0) ? 'listening' : 'spelling';
-                currentLessonQuestions.push({ word: randWord, type: type });
+            const currentUser = getCurrentUser();
+            const userId = currentUser.id;
+            const routeId = currentUser.activeRoute;
+
+            if (!seenHistory[routeId]) seenHistory[routeId] = [];
+            if (!wrongWordsHistory[userId]) wrongWordsHistory[userId] = [];
+
+            let selectedQuestions = [];
+
+            // 1. 優先放入個人錯題本中的單字（最多占 4 題，協助強化記憶）
+            const userWrongs = wrongWordsHistory[userId];
+            const wrongPool = pool.filter(v => userWrongs.includes(v.id || v.en)).sort(() => Math.random() - 0.5);
+
+            for (let i = 0; i < Math.min(4, wrongPool.length); i++) {
+                selectedQuestions.push(wrongPool[i]);
             }
+
+            // 2. 其餘位置補入「尚未做過的新題目」
+            let unseenPool = pool.filter(v => 
+                !seenHistory[routeId].includes(v.id || v.en) && 
+                !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))
+            ).sort(() => Math.random() - 0.5);
+
+            // 若剩餘新題目不夠，說明這輪已完結，重置看過歷史展開新循環
+            if (unseenPool.length + selectedQuestions.length < 10) {
+                seenHistory[routeId] = [];
+                unseenPool = pool.filter(v => !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))).sort(() => Math.random() - 0.5);
+            }
+
+            while (selectedQuestions.length < 10 && unseenPool.length > 0) {
+                selectedQuestions.push(unseenPool.pop());
+            }
+
+            // 若仍不足 10 題，自總庫補齊
+            if (selectedQuestions.length < 10) {
+                const fillPool = pool.filter(v => !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))).sort(() => Math.random() - 0.5);
+                while (selectedQuestions.length < 10 && fillPool.length > 0) {
+                    selectedQuestions.push(fillPool.pop());
+                }
+            }
+
+            // 將這 10 題打亂並寫入做題歷史
+            selectedQuestions.sort(() => Math.random() - 0.5);
+            currentLessonQuestions = selectedQuestions.map((randWord, idx) => {
+                const wordKey = randWord.id || randWord.en;
+                if (!seenHistory[routeId].includes(wordKey)) {
+                    seenHistory[routeId].push(wordKey);
+                }
+                const type = (randWord.en.includes(" ") || randWord.prompt || idx % 2 === 0) ? 'listening' : 'spelling';
+                return { word: randWord, type: type };
+            });
+
+            localStorage.setItem('garden_seen_history', JSON.stringify(seenHistory));
+
             currentQIndex = 0;
             loadQuestion();
         }
@@ -522,10 +633,21 @@
             }
         }
 
+        function renderHintIcon(containerId, wordObj) {
+            const container = document.getElementById(containerId);
+            const iconData = wordObj.icon || getAutoEmoji(wordObj.en, wordObj.zh);
+
+            if (iconData.startsWith('<img')) {
+                container.innerHTML = iconData;
+            } else {
+                container.innerText = iconData;
+            }
+        }
+
         function setupListeningQuiz() {
-            document.getElementById('quiz-progress').style.width = `${((currentQIndex + 1) / 10) * 100}%`;
-            document.getElementById('quiz-num-text').innerText = `${currentQIndex + 1}/10`;
-            document.getElementById('target-icon').innerText = currentWord.icon || getAutoEmoji(currentWord.en, currentWord.zh);
+            document.getElementById('quiz-progress').style.width = `${((currentQIndex + 1) / currentLessonQuestions.length) * 100}%`;
+            document.getElementById('quiz-num-text').innerText = `${currentQIndex + 1}/${currentLessonQuestions.length}`;
+            renderHintIcon('target-icon', currentWord);
 
             const promptBox = document.getElementById('question-prompt');
             if (currentWord.prompt) {
@@ -538,15 +660,16 @@
             const grid = document.getElementById('options-grid');
             grid.innerHTML = '';
 
-            let options = currentWord.options ? [...currentWord.options] : [currentWord.en];
-            if (!currentWord.options) {
-                const pool = getActiveVocabPool();
-                while (options.length < 4) {
-                    const rand = pool[Math.floor(Math.random() * pool.length)].en;
-                    if (!options.includes(rand)) options.push(rand);
-                }
-                options.sort(() => Math.random() - 0.5);
+            let options = [currentWord.en];
+            const pool = getActiveVocabPool();
+            
+            // 正確動態抽取干擾選項
+            while (options.length < 4) {
+                const randObj = pool[Math.floor(Math.random() * pool.length)];
+                const randWord = randObj ? randObj.en : "good";
+                if (!options.includes(randWord)) options.push(randWord);
             }
+            options.sort(() => Math.random() - 0.5);
 
             options.forEach(opt => {
                 const btn = document.createElement('button');
@@ -567,27 +690,51 @@
             speakText(textToSpeak);
         }
 
+        function recordWrongWord(wordObj) {
+            const currentUser = getCurrentUser();
+            const userId = currentUser.id;
+            const wordKey = wordObj.id || wordObj.en;
+            
+            if (!wrongWordsHistory[userId]) wrongWordsHistory[userId] = [];
+            if (!wrongWordsHistory[userId].includes(wordKey)) {
+                wrongWordsHistory[userId].push(wordKey);
+                localStorage.setItem('garden_wrong_history', JSON.stringify(wrongWordsHistory));
+            }
+        }
+
+        function removeWrongWord(wordObj) {
+            const currentUser = getCurrentUser();
+            const userId = currentUser.id;
+            const wordKey = wordObj.id || wordObj.en;
+
+            if (wrongWordsHistory[userId]) {
+                wrongWordsHistory[userId] = wrongWordsHistory[userId].filter(k => k !== wordKey);
+                localStorage.setItem('garden_wrong_history', JSON.stringify(wrongWordsHistory));
+            }
+        }
+
         function checkListening(selected, btn) {
             if (isAnsweringLocked) return;
-            const correctAns = currentWord.options ? currentWord.options[0] : currentWord.en;
 
-            if (selected === correctAns) {
+            if (selected === currentWord.en) {
                 isAnsweringLocked = true;
                 btn.classList.add('correct');
+                removeWrongWord(currentWord); // 答對即從錯題本中移除
                 speakText(selected, () => {
                     setTimeout(() => { currentQIndex++; loadQuestion(); }, 400);
                 });
             } else {
                 btn.classList.add('wrong');
+                recordWrongWord(currentWord); // 答錯即自動存入個人錯題本
                 speakText(selected);
                 setTimeout(() => btn.classList.remove('wrong'), 800);
             }
         }
 
         function setupSpellingQuiz() {
-            document.getElementById('spelling-progress').style.width = `${((currentQIndex + 1) / 10) * 100}%`;
-            document.getElementById('spelling-num-text').innerText = `${currentQIndex + 1}/10`;
-            document.getElementById('spelling-icon').innerText = currentWord.icon || getAutoEmoji(currentWord.en, currentWord.zh);
+            document.getElementById('spelling-progress').style.width = `${((currentQIndex + 1) / currentLessonQuestions.length) * 100}%`;
+            document.getElementById('spelling-num-text').innerText = `${currentQIndex + 1}/${currentLessonQuestions.length}`;
+            renderHintIcon('spelling-icon', currentWord);
 
             userSpellingInput = [];
             renderSpellingSlots();
@@ -658,10 +805,12 @@
             if (isAnsweringLocked) return;
             if (userSpellingInput.join('') === currentWord.en.replace(/\s+/g, '')) {
                 isAnsweringLocked = true;
+                removeWrongWord(currentWord);
                 speakText(currentWord.en, () => {
                     setTimeout(() => { currentQIndex++; loadQuestion(); }, 400);
                 });
             } else {
+                recordWrongWord(currentWord);
                 speakText("Try again");
                 userSpellingInput = [];
                 renderSpellingSlots();
@@ -847,17 +996,45 @@
         }
         function closePathModal() { document.getElementById('path-modal').classList.add('hidden'); }
 
-        /* 自動 Emoji 智慧匹配機制 */
+        /* 全自動智慧動態圖庫匹配機制 (支援任何新單字) */
         function getAutoEmoji(enText = "", zhText = "") {
             const cleanZh = zhText.trim().toLowerCase();
             const cleanEn = enText.trim().toLowerCase();
 
-            if (cleanZh && emojiDictionary[cleanZh]) return emojiDictionary[cleanZh];
+            if (cleanZh) {
+                if (cleanZh.includes("搖晃") || cleanZh.includes("搖")) return "🫨";
+                if (cleanZh.includes("打滾") || cleanZh.includes("滾")) return "🐕";
+                if (cleanZh.includes("墊子") || cleanZh.includes("地墊")) return "🚪";
+                if (cleanZh.includes("坐下") || cleanZh.includes("坐")) return "🪑";
+                if (cleanZh.includes("站起來") || cleanZh.includes("站")) return "🚶";
+                if (cleanZh.includes("抓")) return "✊";
+                if (cleanZh.includes("握手")) return "🤝";
+                if (cleanZh.includes("擁抱")) return "🫂";
+                if (cleanZh.includes("包包")) return "👜";
+                if (cleanZh.includes("後背包")) return "🎒";
+                if (cleanZh.includes("床")) return "🛏️";
+                if (cleanZh.includes("書桌") || cleanZh.includes("桌子")) return "🛋️";
+                if (cleanZh.includes("喇叭") || cleanZh.includes("音響")) return "🔊";
+                if (cleanZh.includes("吃")) return "😋";
+                if (cleanZh.includes("刷")) return "🪥";
+                if (cleanZh.includes("牙齒")) return "🦷";
+                if (cleanZh.includes("乾淨")) return "✨";
+                if (emojiDictionary[cleanZh]) return emojiDictionary[cleanZh];
+            }
+
             if (cleanEn && emojiDictionary[cleanEn]) return emojiDictionary[cleanEn];
 
             for (let key in emojiDictionary) {
-                if (cleanEn.includes(key) || cleanZh.includes(key)) return emojiDictionary[key];
+                if ((cleanZh && cleanZh.includes(key)) || (cleanEn && cleanEn.includes(key))) {
+                    return emojiDictionary[key];
+                }
             }
+
+            const primaryWord = cleanEn.split(' ')[0].replace(/[^a-z]/g, '');
+            if (primaryWord) {
+                return `<img src="https://api.iconify.design/noto:${primaryWord}.svg" style="width:1.2em; height:1.2em; vertical-align:middle;" onerror="this.src='https://api.iconify.design/emojione:${primaryWord}.svg'; this.onerror=function(){this.outerHTML='📖';}">`;
+            }
+
             return "📖";
         }
 
@@ -974,8 +1151,12 @@
             if (confirm("確定要清空所有自行匯入的題庫嗎？")) {
                 userVocab = [];
                 lastUploadTime = "";
+                seenHistory = {};
+                wrongWordsHistory = {};
                 localStorage.removeItem('garden_user_vocab');
                 localStorage.removeItem('garden_upload_time');
+                localStorage.removeItem('garden_seen_history');
+                localStorage.removeItem('garden_wrong_history');
                 renderAdminSummary();
             }
         }
