@@ -344,7 +344,6 @@
             { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲專向特訓" }
         ];
 
-        // 圖案對應字典 (補強句型人物對應：she/he/friend/who/where/how old)
         const emojiDictionary = {
             "she": "👧", "who is she": "👧", "girl": "👧", "friend": "👧", "朋友": "👧",
             "he": "👦", "who is he": "👦", "boy": "👦",
@@ -428,7 +427,7 @@
             { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
         ];
 
-        // 預設內建基礎題庫
+        // 預設內建基礎題庫 (僅在未同步雲端時備用)
         const builtinVocab = [
             { id: "b_v1", en: "apple", zh: "蘋果", icon: "🍎", category: "vocab" },
             { id: "b_v2", en: "banana", zh: "香蕉", icon: "🍌", category: "vocab" },
@@ -523,7 +522,8 @@
             const currentUser = getCurrentUser();
             if (currentUser.activeRoute === "number") return generateNumberAndColorPool();
 
-            let allVocab = [...builtinVocab, ...userVocab];
+            // 若已有同步的雲端題庫，完全以雲端題庫為主（不再混合預設 Apple 題）
+            let allVocab = userVocab.length > 0 ? [...userVocab] : [...builtinVocab];
             let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
 
             if (currentUser.activeRoute === "phonics") {
@@ -1164,7 +1164,9 @@
         /* 渲染可點擊展開編修的後台題庫列表 */
         function renderAdminSummary() {
             const summaryList = document.getElementById('stat-summary-list');
-            const allVocab = [...builtinVocab, ...userVocab];
+            
+            // 若曾同步過雲端，以雲端庫為主；若未同步過，則載入預設題庫
+            const allVocab = userVocab.length > 0 ? [...userVocab] : [...builtinVocab];
             
             summaryList.innerHTML = '';
             routes.forEach(r => {
