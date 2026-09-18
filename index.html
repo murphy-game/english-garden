@@ -307,7 +307,7 @@
             </div>
         </div>
 
-        <!-- 家長管理 Modal (編修修正) -->
+        <!-- 家長管理 Modal -->
         <div id="admin-modal" class="modal hidden">
             <div class="modal-content">
                 <h3 style="margin-top:0;">⚙️ 家長管理 - 題庫維護與同步</h3>
@@ -521,9 +521,9 @@
             let allVocab = [...builtinVocab, ...userVocab];
             let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
 
-            if (currentUser.activeRoute === "phonics" && pool.length < 5) {
-                const vocabPool = allVocab.filter(v => (v.category === "vocab" || v.category === "season") && !v.en.includes(" "));
-                pool = [...pool, ...vocabPool];
+            // 🔤 自然拼讀：自動共享「生活單字」與「四季天氣」的所有單字進行拼讀訓練！
+            if (currentUser.activeRoute === "phonics") {
+                pool = allVocab.filter(v => (v.category === "vocab" || v.category === "season" || v.category === "phonics") && !v.en.includes(" "));
             }
             return pool;
         }
@@ -1048,7 +1048,6 @@
             cloudTag.style.color = "#2e86de";
         }
 
-        // 使用 JSONP 繞過所有瀏覽器網域與 file:// 協議連線阻擋
         function fetchSheetViaJSONP(sheetName) {
             return new Promise((resolve, reject) => {
                 const callbackName = 'gvizCallback_' + sheetName + '_' + Date.now();
@@ -1073,7 +1072,7 @@
             });
         }
 
-        // 精準處理 Google Sheet 解析欄位對照（A: id, B: word/question, C: translation/answer, D: distractors, E: category）
+        // 重構分類映射：生活單字全部歸回 `vocab`，避免被自然拼讀分走！
         function parseGVizTableToPool(table, poolArray, defaultCategory) {
             if (!table || !table.rows) return;
 
@@ -1087,7 +1086,6 @@
                 const colD = cells[3] ? (cells[3].v !== null ? cells[3].v.toString().trim() : '') : '';
                 const colE = cells[4] ? (cells[4].v !== null ? cells[4].v.toString().trim() : '') : '';
 
-                // 忽略標頭列
                 if (colA === 'id' || colB === 'word' || colB === 'question') return;
 
                 let en = "";
@@ -1096,21 +1094,20 @@
                 let category = defaultCategory;
 
                 if (defaultCategory === "vocab") {
-                    en = colB; // word (英文)
-                    zh = colC || colB; // translation (中文)
+                    en = colB;
+                    zh = colC || colB;
                 } else if (defaultCategory === "sentence") {
-                    prompt = colB; // question (題目提問)
-                    en = colC; // answer (英文答案)
+                    prompt = colB;
+                    en = colC;
                     zh = prompt;
                 }
 
-                // 精準中文/英文類別映射
+                // 精準分類歸流：vocab 頁籤的所有單字全數回歸 `vocab` 或 `season`
                 const rawCat = colE;
                 if (rawCat.includes("句型") || rawCat === "sentence") category = "sentence";
                 else if (rawCat.includes("天氣") || rawCat.includes("四季") || rawCat === "season") category = "season";
-                else if (rawCat.includes("拼讀") || rawCat === "phonics") category = "phonics";
                 else if (rawCat.includes("數字") || rawCat.includes("顏色") || rawCat === "number") category = "number";
-                else category = "vocab";
+                else category = "vocab"; // 預設 92 筆單字全數歸流至「生活單字」
 
                 let options = null;
                 if (colD && colD.includes('/')) {
@@ -1162,7 +1159,7 @@
             });
         }
 
-        /* 渲染可點擊展開編修的後台題庫列表 */
+        /* 渲染可點擊展開編修的後台題庫列表 (精準呈現分類題數) */
         function renderAdminSummary() {
             const summaryList = document.getElementById('stat-summary-list');
             const allVocab = [...builtinVocab, ...userVocab];
@@ -1171,7 +1168,8 @@
             routes.forEach(r => {
                 let items = [];
                 if (r.id === "phonics") {
-                    items = allVocab.filter(item => item.category === "phonics" || (item.category === "vocab" && !item.en.includes(" ")));
+                    // 自然拼讀：自動統計所有適合作發音練習的單字
+                    items = allVocab.filter(item => (item.category === "vocab" || item.category === "season" || item.category === "phonics") && !item.en.includes(" "));
                 } else if (r.id === "number") {
                     items = generateNumberAndColorPool();
                 } else {
