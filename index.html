@@ -163,10 +163,23 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 5px;
         }
         .play-play-icon { font-size: 3.5rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+        
+        /* 管理後台編修樣式 */
         .stat-card {
-            background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
-            display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold;
+            background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold; cursor: pointer;
         }
+        .word-list-panel {
+            background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 10px; margin-bottom: 10px;
+            max-height: 220px; overflow-y: auto;
+        }
+        .word-item-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f2f6; font-size: 0.85rem;
+        }
+        .add-word-bar {
+            display: flex; gap: 6px; margin-top: 8px;
+        }
+        .add-word-bar input { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -222,7 +235,7 @@
 
             <div class="question-card">
                 <div class="question-prompt" id="question-prompt" style="display:none;">What do you see?</div>
-                <div class="image-hint" id="target-icon">🪵</div>
+                <div class="image-hint" id="target-icon">🛋️</div>
                 <button class="icon-btn" style="margin: 10px auto; width:50px; height:50px; font-size:1.4rem;" onclick="speakQuestionOnly()">🔊</button>
             </div>
 
@@ -294,20 +307,18 @@
             </div>
         </div>
 
-        <!-- 家長管理 Modal -->
+        <!-- 家長管理 Modal (編修修正) -->
         <div id="admin-modal" class="modal hidden">
             <div class="modal-content">
-                <h3 style="margin-top:0;">⚙️ 家長管理 - 自訂題庫</h3>
+                <h3 style="margin-top:0;">⚙️ 家長管理 - 題庫維護與同步</h3>
                 
                 <div class="file-upload-box">
-                    <h4 style="margin:0 0 8px 0; color:#2ed573;">📁 上傳 CSV 題庫檔 (選擇性擴充)</h4>
-                    <p style="font-size:0.8rem; color:#555; margin-bottom:10px; line-height:1.4;">
-                        系統預設已內建常見基礎題庫！若想配合學校進度擴充，可上傳：<br>
-                        • <b>vocab.csv</b> ➔ 生活單字<br>
-                        • <b>sentence.csv</b> ➔ 生活句型 (含教室用語)<br>
-                        • <b>phonics.csv</b> ➔ 自然拼讀
-                    </p>
-                    <input type="file" id="csv-file-input" accept=".csv" style="font-size:0.9rem; width:100%;">
+                    <h4 style="margin:0 0 8px 0; color:#2ed573;">☁️ Google Sheet 雲端題庫同步</h4>
+                    <div style="font-size:0.85rem; color:#555; text-align:left; margin-bottom:12px; line-height:1.5;">
+                        • <b>📱 手機使用版本：</b><span id="local-version-tag" style="color:#e67e22; font-weight:bold;">內建預設版</span><br>
+                        • <b>☁️ 雲端最新版本：</b><span id="cloud-version-tag" style="color:#2ed573; font-weight:bold;">檢查中...</span>
+                    </div>
+                    <button class="start-btn" style="padding:10px; font-size:0.95rem; background:#2ed573; color:#fff; margin-bottom:5px;" onclick="syncCloudSheet()">🔄 檢查並同步最新題庫</button>
                     <div id="upload-status-msg" style="font-size:0.8rem; font-weight:bold; margin-top:8px;"></div>
                 </div>
 
@@ -316,7 +327,7 @@
                 </div>
 
                 <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
-                <h4>目前題庫總比數</h4>
+                <h4 style="margin-bottom:8px;">目前題庫內容 (點擊可展開編修)</h4>
                 <div id="stat-summary-list"></div>
 
                 <button class="icon-btn" style="width:100%; border-radius:10px; margin-top:10px;" onclick="closeAdminModal()">關閉後台</button>
@@ -329,97 +340,44 @@
             { id: "vocab", name: "🌱 生活單字", desc: "日常生活詞彙與認知" },
             { id: "sentence", name: "💬 生活句型", desc: "日常對話問答與教室用語" },
             { id: "number", name: "🔢 數字與顏色", desc: "1~20, 20~90整十聽力辨析、七彩" },
-            { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲" }
+            { id: "season", name: "🌸 四季與天氣", desc: "四季變化、天氣現象與自然景觀" },
+            { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲專向特訓" }
         ];
 
-        // 常用對應字典
         const emojiDictionary = {
-            "搖晃": "🫨", "搖": "🫨", "shake": "🫨",
-            "打滾": "🐕", "滾": "🐕", "roll": "🐕",
-            "墊子": "🚪", "地墊": "🚪", "mat": "🚪",
-            "坐下": "🪑", "坐": "🪑", "sit down": "🪑", "sit": "🪑",
-            "站起來": "🚶", "站": "🚶", "stand up": "🚶", "stand": "🚶",
-            "抓": "✊", "catch": "✊",
-            "握手": "🤝",
-            "擁抱": "🫂", "hug": "🫂",
-            "包包": "👜", "bag": "👜",
-            "後背包": "🎒", "backpack": "🎒",
-            "床": "🛏️", "bed": "🛏️",
-            "書桌": "🛋️", "桌子": "🛋️", "desk": "🛋️", "table": "🪵",
-            "泰迪熊": "🧸", "teddy bear": "🧸",
-            "喇叭": "🔊", "speaker": "🔊",
-            "吃": "😋", "eat": "😋",
-            "刷": "🪥", "brush": "🪥",
-            "牙齒": "🦷", "teeth": "🦷",
-            "餅乾": "🍪", "cookie": "🍪",
-            "冰淇淋": "🍦", "ice cream": "🍦",
-            "乾淨的": "✨", "乾淨": "✨", "clean": "✨",
-            "黑板": "📋", "board": "📋",
-            "時鐘": "⏰", "clock": "⏰",
-            "地圖": "🗺️", "map": "🗺️",
-            "教室": "🏫", "classroom": "🏫",
-            "椅子": "🪑", "chair": "🪑",
-            "書本": "📖", "book": "📖",
-            "音樂": "🎵", "music": "🎵",
-            "美術": "🎨", "art": "🎨",
-            "體育": "⚽", "p.e.": "⚽",
-            "英文": "🔤", "english": "🔤",
-            "唱歌": "🎤", "sing": "🎤",
-            "畫畫": "🖌️", "paint": "🖌️",
-            "說話": "🗣️", "speak": "🗣️",
-            "騎": "🚴", "ride": "🚴",
-            "腳踏車": "🚲", "bike": "🚲",
-            "馬": "🐎", "horse": "🐎",
-            "滑板車": "🛴", "kickboard": "🛴",
-            "滑板": "🛹", "skateboard": "🛹",
-            "醫生": "👨‍⚕️", "doctor": "👨‍⚕️",
-            "老師": "👩‍🏫", "teacher": "👩‍🏫",
-            "動物園管理員": "🦁", "zookeeper": "🦁",
-            "醫院": "🏥", "hospital": "🏥",
-            "家": "🏡", "home": "🏡",
-            "鳥": "🐦", "bird": "🐦",
-            "花": "💐", "花朵": "💐", "flower": "💐",
-            "蝴蝶": "🦋", "butterfly": "🦋",
-            "草": "🌱", "grass": "🌱",
-            "春天": "🌸", "spring": "🌸",
-            "花園": "🏡", "garden": "🏡",
-            "大象": "🐘", "elephant": "🐘",
-            "魚": "🐟", "fish": "🐟",
-            "漢堡": "🍔", "hamburger": "🍔",
-            "果醬": "🍓", "jam": "🍓",
-            "無尾熊": "🐨", "koala": "🐨",
-            "獅子": "🦁", "lion": "🦁",
-            "猴子": "🐒", "monkey": "🐒",
-            "堅果": "🥜", "nuts": "🥜",
-            "兔子": "🐰", "rabbit": "🐰",
-            "蛇": "🐍", "snake": "🐍",
-            "老虎": "🐯", "tiger": "🐯",
-            "雨傘": "☂️", "umbrella": "☂️",
-            "廂型車": "🚐", "van": "🚐",
-            "大狼": "🐺", "狼": "🐺", "wolf": "🐺",
-            "狐狸": "🦊", "fox": "🦊",
-            "溜溜球": "🪀", "yo-yo": "🪀",
-            "斑馬": "🦓", "zebra": "🦓",
-            "腿": "🦵", "leg": "🦵",
-            "網子": "🕸️", "net": "🕸️",
-            "筆": "✏️", "pen": "✏️",
-            "六": "6️⃣", "six": "6️⃣",
-            "豬": "🐷", "pig": "🐷",
-            "牛奶": "🥛", "milk": "🥛",
-            "拖把": "🧹", "mop": "🧹",
-            "杯子": "🥤", "cup": "🥤",
-            "太陽": "☀️", "sun": "☀️",
-            "湯匙": "🥄", "spoon": "🥄",
-            "郵票": "✉️", "stamp": "✉️",
-            "臭鼬": "🦨", "skunk": "🦨",
-            "學生": "🧑‍🎓", "student": "🧑‍🎓",
-            "蝸牛": "🐌", "snail": "🐌",
-            "游泳": "🏊", "swim": "🏊",
-            "盪鞦韆": "🛝", "swing": "🛝",
-            "女襯衫": "👚", "女短上衣": "👚", "blouse": "👚",
-            "盤子": "🍽️", "plate": "🍽️",
-            "玻璃杯": "🥃", "glass": "🥃",
-            "旗子": "🚩", "flag": "🚩",
+            "搖晃": "🫨", "搖": "🫨", "shake": "🫨", "打滾": "🐕", "滾": "🐕", "roll": "🐕",
+            "墊子": "🚪", "地墊": "🚪", "mat": "🚪", "坐下": "🪑", "坐": "🪑", "sit down": "🪑", "sit": "🪑",
+            "站起來": "🚶", "站": "🚶", "stand up": "🚶", "stand": "🚶", "抓": "✊", "catch": "✊",
+            "握手": "🤝", "擁抱": "🫂", "hug": "🫂", "包包": "👜", "bag": "👜", "後背包": "🎒", "backpack": "🎒",
+            "床": "🛏️", "bed": "🛏️", "書桌": "🛋️", "桌子": "🛋️", "desk": "🛋️", "table": "🛋️",
+            "泰迪熊": "🧸", "teddy bear": "🧸", "喇叭": "🔊", "speaker": "🔊", "吃": "😋", "eat": "😋",
+            "刷": "🪥", "brush": "🪥", "牙齒": "🦷", "teeth": "🦷", "餅乾": "🍪", "cookie": "🍪",
+            "冰淇淋": "🍦", "ice cream": "🍦", "乾淨的": "✨", "乾淨": "✨", "clean": "✨", "黑板": "📋", "board": "📋",
+            "時鐘": "⏰", "clock": "⏰", "地圖": "🗺️", "map": "🗺️", "教室": "🏫", "classroom": "🏫",
+            "椅子": "🪑", "chair": "🪑", "書本": "📖", "book": "📖", "音樂": "🎵", "music": "🎵",
+            "美術": "🎨", "art": "🎨", "體育": "⚽", "p.e.": "⚽", "英文": "🔤", "english": "🔤",
+            "唱歌": "🎤", "sing": "🎤", "畫畫": "🖌️", "paint": "🖌️", "說話": "🗣️", "speak": "🗣️",
+            "騎": "🚴", "ride": "🚴", "腳踏車": "🚲", "bike": "🚲", "馬": "🐎", "horse": "🐎",
+            "滑板車": "🛴", "kickboard": "🛴", "滑板": "🛹", "skateboard": "🛹", "醫生": "👨‍⚕️", "doctor": "👨‍⚕️",
+            "老師": "👩‍🏫", "teacher": "👩‍🏫", "動物園管理員": "🦁", "zookeeper": "🦁", "醫院": "🏥", "hospital": "🏥",
+            "家": "🏡", "home": "🏡", "鳥": "🐦", "bird": "🐦", "花": "💐", "花朵": "💐", "flower": "💐",
+            "蝴蝶": "🦋", "butterfly": "🦋", "草": "🌱", "grass": "🌱", "春天": "🌸", "spring": "🌸",
+            "夏天": "☀️", "summer": "☀️", "秋天": "🍁", "fall": "🍁", "autumn": "🍁", "冬天": "❄️", "winter": "❄️",
+            "冷": "🥶", "冷的": "🥶", "cold": "🥶", "熱": "🥵", "熱的": "🥵", "hot": "🥵",
+            "晴天": "☀️", "sunny": "☀️", "雨天": "🌧️", "rainy": "🌧️", "風": "💨", "windy": "💨",
+            "花園": "🏡", "garden": "🏡", "大象": "🐘", "elephant": "🐘", "魚": "🐟", "fish": "🐟",
+            "漢堡": "🍔", "hamburger": "🍔", "果醬": "🍓", "jam": "🍓", "無尾熊": "🐨", "koala": "🐨",
+            "獅子": "🦁", "lion": "🦁", "猴子": "🐒", "monkey": "🐒", "堅果": "🥜", "nuts": "🥜",
+            "兔子": "🐰", "rabbit": "🐰", "蛇": "🐍", "snake": "🐍", "老虎": "🐯", "tiger": "🐯",
+            "雨傘": "☂️", "umbrella": "☂️", "廂型車": "🚐", "van": "🚐", "大狼": "🐺", "狼": "🐺", "wolf": "🐺",
+            "狐狸": "🦊", "fox": "🦊", "溜溜球": "🪀", "yo-yo": "🪀", "斑馬": "🦓", "zebra": "🦓",
+            "腿": "🦵", "leg": "🦵", "網子": "🕸️", "net": "🕸️", "筆": "✏️", "pen": "✏️",
+            "六": "6️⃣", "six": "6️⃣", "豬": "🐷", "pig": "🐷", "牛奶": "🥛", "milk": "🥛",
+            "拖把": "🧹", "mop": "🧹", "杯子": "🥤", "cup": "🥤", "太陽": "☀️", "sun": "☀️",
+            "湯匙": "🥄", "spoon": "🥄", "郵票": "✉️", "stamp": "✉️", "臭鼬": "🦨", "skunk": "🦨",
+            "學生": "🧑‍🎓", "student": "🧑‍🎓", "蝸牛": "🐌", "snail": "🐌", "游泳": "🏊", "swim": "🏊",
+            "盪鞦韆": "🛝", "swing": "🛝", "女襯衫": "👚", "女短上衣": "👚", "blouse": "👚",
+            "盤子": "🍽️", "plate": "🍽️", "玻璃杯": "🥃", "glass": "🥃", "旗子": "🚩", "flag": "🚩",
             "溜滑梯": "🛝", "slide": "🛝"
         };
 
@@ -438,20 +396,20 @@
                 
                 pool.push({
                     id: "num_gen_" + num,
-                    en: en, prompt: "", icon: "🎧", category: "number",
+                    en: en, zh: num.toString(), prompt: "", icon: "🎧", category: "number",
                     options: [num.toString(), distractor1.toString(), (parseInt(num)+1).toString(), "5"]
                 });
             }
 
             const colors = [
-                { en: "red", icon: "🔴" }, { en: "orange", icon: "🟠" }, { en: "yellow", icon: "🟡" },
-                { en: "green", icon: "🟢" }, { en: "blue", icon: "🔵" }, { en: "purple", icon: "🟣" },
-                { en: "rainbow", icon: "🌈" }
+                { en: "red", icon: "🔴", zh: "紅色" }, { en: "orange", icon: "🟠", zh: "橘色" }, { en: "yellow", icon: "🟡", zh: "黃色" },
+                { en: "green", icon: "🟢", zh: "綠色" }, { en: "blue", icon: "🔵", zh: "藍色" }, { en: "purple", icon: "🟣", zh: "紫色" },
+                { en: "rainbow", icon: "🌈", zh: "彩虹" }
             ];
 
             colors.forEach((c, idx) => {
                 pool.push({
-                    id: "color_gen_" + idx, en: c.en, prompt: "", icon: c.icon, category: "number",
+                    id: "color_gen_" + idx, en: c.en, zh: c.zh, prompt: "", icon: c.icon, category: "number",
                     options: [c.en, "red", "blue", "yellow"].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4)
                 });
             });
@@ -465,53 +423,28 @@
             { id: "ch3", title: "Open Shut Them", ytId: "RNUZBHlRH4Y", icon: "👐✊👏" }
         ];
 
-        // 開箱即用：豐富的預設內建基礎題庫 (未上傳 CSV 時直接可用)
+        // 預設內建基礎題庫
         const builtinVocab = [
-            // --- 生活單字 ---
             { id: "b_v1", en: "apple", zh: "蘋果", icon: "🍎", category: "vocab" },
             { id: "b_v2", en: "banana", zh: "香蕉", icon: "🍌", category: "vocab" },
             { id: "b_v3", en: "cat", zh: "貓咪", icon: "🐱", category: "vocab" },
             { id: "b_v4", en: "dog", zh: "小狗", icon: "🐶", category: "vocab" },
             { id: "b_v5", en: "rabbit", zh: "兔子", icon: "🐰", category: "vocab" },
-            { id: "b_v6", en: "book", zh: "書本", icon: "📖", category: "vocab" },
-            { id: "b_v7", en: "pencil", zh: "鉛筆", icon: "✏️", category: "vocab" },
-            { id: "b_v8", en: "chair", zh: "椅子", icon: "🪑", category: "vocab" },
-            { id: "b_v9", en: "desk", zh: "書桌", icon: "🛋️", category: "vocab" },
-            { id: "b_v10", en: "milk", zh: "牛奶", icon: "🥛", category: "vocab" },
-            { id: "b_v11", en: "sun", zh: "太陽", icon: "☀️", category: "vocab" },
-            { id: "b_v12", en: "flower", zh: "花朵", icon: "💐", category: "vocab" },
-            { id: "b_v13", en: "fish", zh: "魚", icon: "🐟", category: "vocab" },
-            { id: "b_v14", en: "bird", zh: "小鳥", icon: "🐦", category: "vocab" },
-            { id: "b_v15", en: "slide", zh: "溜滑梯", icon: "🛝", category: "vocab" },
-            { id: "b_v16", en: "swing", zh: "盪鞦韆", icon: "🛝", category: "vocab" },
-            { id: "b_v17", en: "cookie", zh: "餅乾", icon: "🍪", category: "vocab" },
-            { id: "b_v18", en: "car", zh: "汽車", icon: "🚗", category: "vocab" },
-            { id: "b_v19", en: "bag", zh: "包包", icon: "👜", category: "vocab" },
-            { id: "b_v20", en: "clock", zh: "時鐘", icon: "⏰", category: "vocab" },
 
-            // --- 生活句型 ---
-            { id: "b_s1", en: "I see a table.", prompt: "What do you see?", icon: "🪵", category: "sentence" },
-            { id: "b_s2", en: "I am fine.", prompt: "How are you?", icon: "😊", category: "sentence" },
-            { id: "b_s3", en: "My name is Emma.", prompt: "What's your name?", icon: "👧", category: "sentence" },
-            { id: "b_s4", en: "I am 7 years old.", prompt: "How old are you?", icon: "🎂", category: "sentence" },
-            { id: "b_s5", en: "I can ride a bike.", prompt: "What can you do?", icon: "🚲", category: "sentence" },
-            { id: "b_s6", en: "I like to sing.", prompt: "What do you like to do?", icon: "🎤", category: "sentence" },
-            { id: "b_s7", en: "Yes, I am happy.", prompt: "Are you happy?", icon: "😄", category: "sentence" },
-            { id: "b_s8", en: "Thank you.", prompt: "Here is your hamburger.", icon: "🍔", category: "sentence" },
-            { id: "b_s9", en: "You are welcome.", prompt: "Thank you.", icon: "🤝", category: "sentence" },
-            { id: "b_s10", en: "It is a clock.", prompt: "What is it?", icon: "⏰", category: "sentence" },
+            { id: "b_w1", en: "spring", zh: "春天", icon: "🌸", category: "season" },
+            { id: "b_w2", en: "summer", zh: "夏天", icon: "☀️", category: "season" },
+            { id: "b_w3", en: "fall", zh: "秋天", icon: "🍁", category: "season" },
+            { id: "b_w4", en: "winter", zh: "冬天", icon: "❄️", category: "season" },
+            { id: "b_w5", en: "cold", zh: "冷的", icon: "🥶", category: "season" },
+            { id: "b_w6", en: "hot", zh: "熱的", icon: "🥵", category: "season" },
 
-            // --- 自然拼讀 CVC ---
+            { id: "b_s1", en: "I see a table.", prompt: "What do you see?", zh: "你看見什麼？", icon: "🛋️", category: "sentence" },
+            { id: "b_s2", en: "I am fine.", prompt: "How are you?", zh: "你好嗎？", icon: "😊", category: "sentence" },
+            { id: "b_s3", en: "My name is Emma.", prompt: "What's your name?", zh: "你叫什麼名字？", icon: "👧", category: "sentence" },
+
             { id: "b_p1", en: "cat", zh: "短母音 a", icon: "🐱", category: "phonics" },
             { id: "b_p2", en: "pen", zh: "短母音 e", icon: "✏️", category: "phonics" },
-            { id: "b_p3", en: "pig", zh: "短母音 i", icon: "🐷", category: "phonics" },
-            { id: "b_p4", en: "mop", zh: "短母音 o", icon: "🧹", category: "phonics" },
-            { id: "b_p5", en: "cup", zh: "短母音 u", icon: "🥤", category: "phonics" },
-            { id: "b_p6", en: "bag", zh: "短母音 a", icon: "👜", category: "phonics" },
-            { id: "b_p7", en: "bed", zh: "短母音 e", icon: "🛏️", category: "phonics" },
-            { id: "b_p8", en: "pin", zh: "短母音 i", icon: "📌", category: "phonics" },
-            { id: "b_p9", en: "dog", zh: "短母音 o", icon: "🐶", category: "phonics" },
-            { id: "b_p10", en: "bus", zh: "短母音 u", icon: "🚌", category: "phonics" }
+            { id: "b_p3", en: "pig", zh: "短母音 i", icon: "🐷", category: "phonics" }
         ];
 
         let users = JSON.parse(localStorage.getItem('garden_users')) || [
@@ -522,10 +455,9 @@
         let userVocab = JSON.parse(localStorage.getItem('garden_user_vocab')) || [];
         let lastUploadTime = localStorage.getItem('garden_upload_time') || "";
 
-        // 跨天做題紀錄：記錄看過的題目 id
         let seenHistory = JSON.parse(localStorage.getItem('garden_seen_history')) || {};
-        // 角色獨立錯題本：記錄每個角色答錯的單字 id
         let wrongWordsHistory = JSON.parse(localStorage.getItem('garden_wrong_history')) || {};
+        let expandedCategory = null;
 
         let currentQIndex = 0;
         let currentLessonQuestions = [];
@@ -555,7 +487,6 @@
 
         function getCurrentUser() { return users.find(u => u.id === currentUserId) || users[0]; }
 
-        // 升級：直觀視覺體積層層放大 UI 機制 (9 大階段)
         function updateGardenUI() {
             const currentUser = getCurrentUser();
             document.getElementById('current-user-name').innerText = currentUser.name;
@@ -590,17 +521,17 @@
             let allVocab = [...builtinVocab, ...userVocab];
             let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
 
-            if (currentUser.activeRoute === "phonics" && pool.length < 2) {
-                pool = allVocab.filter(v => v.category === "vocab");
+            if (currentUser.activeRoute === "phonics" && pool.length < 5) {
+                const vocabPool = allVocab.filter(v => (v.category === "vocab" || v.category === "season") && !v.en.includes(" "));
+                pool = [...pool, ...vocabPool];
             }
             return pool;
         }
 
-        // 精準出題算法（個人化錯題加強 + 跨天不重複）
         function startDailyLesson() {
             const pool = getActiveVocabPool();
             if (pool.length < 2) {
-                alert("當前路線的題目太少囉！請點右上角⚙️後台匯入 CSV 題庫。");
+                alert("當前路線的題目太少囉！請點右上角⚙️後台同步雲端題庫。");
                 return;
             }
 
@@ -613,7 +544,6 @@
 
             let selectedQuestions = [];
 
-            // 1. 優先放入個人錯題本中的單字（最多占 4 題，協助強化記憶）
             const userWrongs = wrongWordsHistory[userId];
             const wrongPool = pool.filter(v => userWrongs.includes(v.id || v.en)).sort(() => Math.random() - 0.5);
 
@@ -621,13 +551,11 @@
                 selectedQuestions.push(wrongPool[i]);
             }
 
-            // 2. 其餘位置補入「尚未做過的新題目」
             let unseenPool = pool.filter(v => 
                 !seenHistory[routeId].includes(v.id || v.en) && 
                 !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))
             ).sort(() => Math.random() - 0.5);
 
-            // 若剩餘新題目不夠，說明這輪已完結，重置看過歷史展開新循環
             if (unseenPool.length + selectedQuestions.length < 10) {
                 seenHistory[routeId] = [];
                 unseenPool = pool.filter(v => !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))).sort(() => Math.random() - 0.5);
@@ -637,7 +565,6 @@
                 selectedQuestions.push(unseenPool.pop());
             }
 
-            // 若仍不足 10 題，自總庫補齊
             if (selectedQuestions.length < 10) {
                 const fillPool = pool.filter(v => !selectedQuestions.some(sq => (sq.id || sq.en) === (v.id || v.en))).sort(() => Math.random() - 0.5);
                 while (selectedQuestions.length < 10 && fillPool.length > 0) {
@@ -645,14 +572,15 @@
                 }
             }
 
-            // 將這 10 題打亂並寫入做題歷史
             selectedQuestions.sort(() => Math.random() - 0.5);
             currentLessonQuestions = selectedQuestions.map((randWord, idx) => {
                 const wordKey = randWord.id || randWord.en;
                 if (!seenHistory[routeId].includes(wordKey)) {
                     seenHistory[routeId].push(wordKey);
                 }
-                const type = (randWord.en.includes(" ") || randWord.prompt || idx % 2 === 0) ? 'listening' : 'spelling';
+                
+                const isSentenceMode = randWord.category === "sentence" || randWord.prompt || (randWord.en && randWord.en.includes(" "));
+                const type = (isSentenceMode || idx % 2 === 0) ? 'listening' : 'spelling';
                 return { word: randWord, type: type };
             });
 
@@ -712,13 +640,21 @@
             grid.innerHTML = '';
 
             let options = [currentWord.en];
-            const pool = getActiveVocabPool();
-            
-            // 正確動態抽取干擾選項
-            while (options.length < 4) {
-                const randObj = pool[Math.floor(Math.random() * pool.length)];
-                const randWord = randObj ? randObj.en : "good";
-                if (!options.includes(randWord)) options.push(randWord);
+            if (currentWord.options && currentWord.options.length > 1) {
+                options = [...currentWord.options];
+            } else {
+                const pool = getActiveVocabPool();
+                let attempts = 0;
+                while (options.length < 4 && attempts < 50) {
+                    attempts++;
+                    const randObj = pool[Math.floor(Math.random() * pool.length)];
+                    const randWord = randObj ? randObj.en : null;
+                    if (randWord && !options.includes(randWord)) options.push(randWord);
+                }
+                const fallbackOpts = ["Yes, I am.", "No, I am not.", "Good-bye.", "Thank you.", "Hello!"];
+                for (let f of fallbackOpts) {
+                    if (options.length < 4 && !options.includes(f)) options.push(f);
+                }
             }
             options.sort(() => Math.random() - 0.5);
 
@@ -770,13 +706,13 @@
             if (selected === currentWord.en) {
                 isAnsweringLocked = true;
                 btn.classList.add('correct');
-                removeWrongWord(currentWord); // 答對即從錯題本中移除
+                removeWrongWord(currentWord);
                 speakText(selected, () => {
                     setTimeout(() => { currentQIndex++; loadQuestion(); }, 400);
                 });
             } else {
                 btn.classList.add('wrong');
-                recordWrongWord(currentWord); // 答錯即自動存入個人錯題本
+                recordWrongWord(currentWord);
                 speakText(selected);
                 setTimeout(() => btn.classList.remove('wrong'), 800);
             }
@@ -790,8 +726,10 @@
             userSpellingInput = [];
             renderSpellingSlots();
 
-            const letters = currentWord.en.replace(/\s+/g, '').split('');
-            while (letters.length < currentWord.en.length + 2) {
+            const targetLetters = (currentWord.en && typeof currentWord.en === 'string') ? currentWord.en.replace(/\s+/g, '').split('') : ["a"];
+            const letters = [...targetLetters];
+
+            while (letters.length < targetLetters.length + 2) {
                 const randChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
                 letters.push(randChar);
             }
@@ -810,7 +748,8 @@
                 btn.className = 'key-btn';
                 btn.innerText = char;
                 btn.onclick = () => {
-                    if (userSpellingInput.length < currentWord.en.length) {
+                    const targetLen = currentWord.en ? currentWord.en.length : 1;
+                    if (userSpellingInput.length < targetLen) {
                         userSpellingInput.push(char);
                         renderSpellingSlots();
                         speakText(char);
@@ -843,7 +782,8 @@
         function renderSpellingSlots() {
             const slots = document.getElementById('spelling-slots');
             slots.innerHTML = '';
-            for (let i = 0; i < currentWord.en.length; i++) {
+            const targetLen = currentWord.en ? currentWord.en.length : 1;
+            for (let i = 0; i < targetLen; i++) {
                 const box = document.createElement('div');
                 box.className = 'slot-box';
                 box.innerText = userSpellingInput[i] || '';
@@ -854,7 +794,8 @@
 
         function checkSpelling() {
             if (isAnsweringLocked) return;
-            if (userSpellingInput.join('') === currentWord.en.replace(/\s+/g, '')) {
+            const targetClean = currentWord.en ? currentWord.en.replace(/\s+/g, '') : "";
+            if (userSpellingInput.join('') === targetClean) {
                 isAnsweringLocked = true;
                 removeWrongWord(currentWord);
                 speakText(currentWord.en, () => {
@@ -1047,7 +988,7 @@
         }
         function closePathModal() { document.getElementById('path-modal').classList.add('hidden'); }
 
-        /* 全自動智慧動態圖庫匹配機制 (支援任何新單字) */
+        /* 全自動智慧動態圖庫匹配機制 */
         function getAutoEmoji(enText = "", zhText = "") {
             const cleanZh = zhText.trim().toLowerCase();
             const cleanEn = enText.trim().toLowerCase();
@@ -1089,117 +1030,239 @@
             return "📖";
         }
 
-        /* 家長 Modal 與檔名自動歸類 */
+        /* --- Google Sheet 雲端 JSONP 無障礙零 CORS 阻擋同步機制 --- */
+        const GOOGLE_SHEET_ID = '18TTLFHOD6L1-rCI5sf0jZ_itRLGFiO_ZUrrsHQ6QsSk';
+
         function openAdminModal() {
             document.getElementById('admin-modal').classList.remove('hidden');
             renderAdminSummary();
+            checkCloudVersion();
         }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-        
+
+        function checkCloudVersion() {
+            const cloudTag = document.getElementById('cloud-version-tag');
+            const localTag = document.getElementById('local-version-tag');
+            localTag.innerText = lastUploadTime ? lastUploadTime : "內建預設版";
+            cloudTag.innerText = "點擊下方按鈕測試同步";
+            cloudTag.style.color = "#2e86de";
+        }
+
+        // 使用 JSONP 繞過所有瀏覽器網域與 file:// 協議連線阻擋
+        function fetchSheetViaJSONP(sheetName) {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'gvizCallback_' + sheetName + '_' + Date.now();
+                window[callbackName] = function(data) {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    if (data && data.table && data.table.rows) {
+                        resolve(data.table);
+                    } else {
+                        reject(new Error("Data table empty"));
+                    }
+                };
+
+                const script = document.createElement('script');
+                script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=responseHandler:${callbackName}&sheet=${sheetName}`;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                    reject(new Error("JSONP Script Error"));
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        // 精準處理 Google Sheet 解析欄位對照（A: id, B: word/question, C: translation/answer, D: distractors, E: category）
+        function parseGVizTableToPool(table, poolArray, defaultCategory) {
+            if (!table || !table.rows) return;
+
+            table.rows.forEach((row, idx) => {
+                const cells = row.c;
+                if (!cells || !cells[0]) return;
+
+                const colA = cells[0] ? (cells[0].v !== null ? cells[0].v.toString().trim() : '') : '';
+                const colB = cells[1] ? (cells[1].v !== null ? cells[1].v.toString().trim() : '') : '';
+                const colC = cells[2] ? (cells[2].v !== null ? cells[2].v.toString().trim() : '') : '';
+                const colD = cells[3] ? (cells[3].v !== null ? cells[3].v.toString().trim() : '') : '';
+                const colE = cells[4] ? (cells[4].v !== null ? cells[4].v.toString().trim() : '') : '';
+
+                // 忽略標頭列
+                if (colA === 'id' || colB === 'word' || colB === 'question') return;
+
+                let en = "";
+                let zh = "";
+                let prompt = "";
+                let category = defaultCategory;
+
+                if (defaultCategory === "vocab") {
+                    en = colB; // word (英文)
+                    zh = colC || colB; // translation (中文)
+                } else if (defaultCategory === "sentence") {
+                    prompt = colB; // question (題目提問)
+                    en = colC; // answer (英文答案)
+                    zh = prompt;
+                }
+
+                // 精準中文/英文類別映射
+                const rawCat = colE;
+                if (rawCat.includes("句型") || rawCat === "sentence") category = "sentence";
+                else if (rawCat.includes("天氣") || rawCat.includes("四季") || rawCat === "season") category = "season";
+                else if (rawCat.includes("拼讀") || rawCat === "phonics") category = "phonics";
+                else if (rawCat.includes("數字") || rawCat.includes("顏色") || rawCat === "number") category = "number";
+                else category = "vocab";
+
+                let options = null;
+                if (colD && colD.includes('/')) {
+                    options = [en, ...colD.split('/').map(o => o.trim())];
+                }
+
+                if (en) {
+                    poolArray.push({
+                        id: "cloud_" + defaultCategory + "_" + idx,
+                        en, prompt, zh, icon: getAutoEmoji(en, zh || prompt), category, options
+                    });
+                }
+            });
+        }
+
+        function syncCloudSheet() {
+            const msgBox = document.getElementById('upload-status-msg');
+            msgBox.style.color = "#2ed573";
+            msgBox.innerText = "⏳ 正在同步 Google Sheet 題庫...";
+
+            Promise.all([
+                fetchSheetViaJSONP("vocab"),
+                fetchSheetViaJSONP("sentences").catch(() => null)
+            ])
+            .then(([vocabTable, sentenceTable]) => {
+                let tempPool = [];
+                if (vocabTable) parseGVizTableToPool(vocabTable, tempPool, "vocab");
+                if (sentenceTable) parseGVizTableToPool(sentenceTable, tempPool, "sentence");
+
+                if (tempPool.length > 0) {
+                    userVocab = tempPool;
+                    const now = new Date();
+                    lastUploadTime = `雲端同步版 ${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+                    localStorage.setItem('garden_user_vocab', JSON.stringify(userVocab));
+                    localStorage.setItem('garden_upload_time', lastUploadTime);
+
+                    alert(`🎉 雲端同步成功！共同步載入 ${userVocab.length} 筆題庫資料！`);
+                    renderAdminSummary();
+                    checkCloudVersion();
+                } else {
+                    alert("⚠️ 雲端題庫資料為空，已維持預設！");
+                }
+            })
+            .catch(err => {
+                alert("❌ 同步失敗，請確認設備網路狀態！");
+                msgBox.style.color = "#ff7675";
+                msgBox.innerText = "連線失敗，請稍後再試";
+            });
+        }
+
+        /* 渲染可點擊展開編修的後台題庫列表 */
         function renderAdminSummary() {
             const summaryList = document.getElementById('stat-summary-list');
             const allVocab = [...builtinVocab, ...userVocab];
             
             summaryList.innerHTML = '';
             routes.forEach(r => {
-                let count = 0;
-                if (r.id === "number") {
-                    count = generateNumberAndColorPool().length;
+                let items = [];
+                if (r.id === "phonics") {
+                    items = allVocab.filter(item => item.category === "phonics" || (item.category === "vocab" && !item.en.includes(" ")));
+                } else if (r.id === "number") {
+                    items = generateNumberAndColorPool();
                 } else {
-                    count = allVocab.filter(item => item.category === r.id).length;
+                    items = allVocab.filter(item => item.category === r.id);
                 }
+
+                let count = items.length;
+
                 const div = document.createElement('div');
                 div.className = 'stat-card';
-                div.innerHTML = `<span>${r.name}</span> <span style="color:#2ed573;">${count} 題 ${r.id==="number" ? "(系統自動)" : ""}</span>`;
+                div.innerHTML = `<span>${r.name}</span> <span style="color:#2ed573;">${count} 題 ${expandedCategory === r.id ? '▲' : '▼'}</span>`;
+                div.onclick = () => toggleCategoryExpand(r.id);
                 summaryList.appendChild(div);
+
+                if (expandedCategory === r.id) {
+                    const listPanel = document.createElement('div');
+                    listPanel.className = 'word-list-panel';
+
+                    items.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'word-item-row';
+                        row.innerHTML = `
+                            <div><b>${item.en}</b> <small style="color:#666;">(${item.zh || item.prompt || '數彩'})</small></div>
+                            ${r.id !== "number" ? `<button class="icon-btn" style="width:28px; height:32px; font-size:0.8rem; border-color:#ff7675; color:#ff7675;" onclick="deleteSingleWord('${item.id || item.en}', event)">🗑️</button>` : ''}
+                        `;
+                        listPanel.appendChild(row);
+                    });
+
+                    if (r.id !== "number") {
+                        const addBar = document.createElement('div');
+                        addBar.className = 'add-word-bar';
+                        addBar.innerHTML = `
+                            <input type="text" id="add-en-${r.id}" placeholder="英文單字/句型">
+                            <input type="text" id="add-zh-${r.id}" placeholder="中文/提示">
+                            <button class="start-btn" style="padding:6px 12px; font-size:0.85rem; width:auto; margin-bottom:0;" onclick="addSingleWord('${r.id}', event)">➕ 新增</button>
+                        `;
+                        listPanel.appendChild(addBar);
+                    }
+                    summaryList.appendChild(listPanel);
+                }
             });
 
             const msgBox = document.getElementById('upload-status-msg');
             if (lastUploadTime) {
                 msgBox.style.color = '#2ed573';
-                msgBox.innerText = `最後匯入時間：${lastUploadTime}`;
+                msgBox.innerText = `目前版本：${lastUploadTime}`;
             } else {
                 msgBox.style.color = '#a4b0be';
-                msgBox.innerText = "已載入內建基礎題庫 (可上傳 CSV 擴充)";
+                msgBox.innerText = "已載入內建基礎題庫 (可隨時同步雲端)";
             }
         }
 
-        document.getElementById('csv-file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        function toggleCategoryExpand(catId) {
+            expandedCategory = expandedCategory === catId ? null : catId;
+            renderAdminSummary();
+        }
 
-            const fileName = file.name.toLowerCase();
-            let category = "";
-
-            if (fileName.includes("vocab")) category = "vocab";
-            else if (fileName.includes("sentence")) category = "sentence";
-            else if (fileName.includes("phonics")) category = "phonics";
-            else {
-                alert("❌ 上傳失敗！檔名必須包含 vocab、sentence 或 phonics 其中之一喔！");
-                document.getElementById('upload-status-msg').style.color = '#ff7675';
-                document.getElementById('upload-status-msg').innerText = "上傳失敗：檔名不符規則";
-                return;
+        function deleteSingleWord(wordKey, e) {
+            e.stopPropagation();
+            if (confirm("確定要刪除這筆單字/句型嗎？")) {
+                userVocab = userVocab.filter(item => (item.id || item.en) !== wordKey);
+                localStorage.setItem('garden_user_vocab', JSON.stringify(userVocab));
+                renderAdminSummary();
             }
+        }
 
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const text = evt.target.result;
-                    parseAndSaveCsv(text, category, file.name);
-                } catch (err) {
-                    alert("❌ 檔案解析失敗，請確認是否為標準 CSV 格式！");
-                }
+        function addSingleWord(catId, e) {
+            e.stopPropagation();
+            const enInput = document.getElementById(`add-en-${catId}`);
+            const zhInput = document.getElementById(`add-zh-${catId}`);
+            const en = enInput.value.trim();
+            const zh = zhInput.value.trim();
+
+            if (!en) return alert("請輸入英文單字或句型！");
+
+            const newObj = {
+                id: "custom_" + Date.now(),
+                en, zh: zh || en,
+                prompt: catId === "sentence" ? zh : "",
+                icon: getAutoEmoji(en, zh),
+                category: catId
             };
-            reader.readAsText(file, 'UTF-8');
-        });
 
-        function parseAndSaveCsv(csvText, category, fileName) {
-            const lines = csvText.split('\n');
-            let count = 0;
-
-            lines.forEach((line, idx) => {
-                if (idx === 0 && (line.includes('英文') || line.includes('en'))) return;
-                const cols = line.split(',').map(c => c.trim());
-                if (cols.length >= 1 && cols[0]) {
-                    const en = cols[0];
-                    let prompt = "";
-                    let zh = "";
-
-                    if (cols[1] && (cols[1].includes('?') || cols[1].includes('What') || cols[1].includes('Listen') || cols[1].includes('['))) {
-                        prompt = cols[1];
-                    } else {
-                        zh = cols[1] || en;
-                    }
-
-                    const icon = getAutoEmoji(en, zh);
-
-                    let itemObj = {
-                        id: "csv_" + Date.now() + "_" + idx,
-                        en, prompt, zh, icon, category
-                    };
-
-                    if (cols[2]) {
-                        const customOptions = cols[2].split('/').map(o => o.trim());
-                        itemObj.options = [en, ...customOptions];
-                    }
-
-                    userVocab.push(itemObj);
-                    count++;
-                }
-            });
-
-            const now = new Date();
-            lastUploadTime = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')} (${fileName})`;
-            
+            userVocab.push(newObj);
             localStorage.setItem('garden_user_vocab', JSON.stringify(userVocab));
-            localStorage.setItem('garden_upload_time', lastUploadTime);
-
-            alert(`🎉 成功匯入 [${fileName}] 共 ${count} 筆題目！`);
+            enInput.value = ''; zhInput.value = '';
             renderAdminSummary();
         }
 
         function clearUserVocab() {
-            if (confirm("確定要重置為預設題庫嗎？")) {
+            if (confirm("確定要重置為內建預設題庫嗎？")) {
                 userVocab = [];
                 lastUploadTime = "";
                 seenHistory = {};
@@ -1209,6 +1272,7 @@
                 localStorage.removeItem('garden_seen_history');
                 localStorage.removeItem('garden_wrong_history');
                 renderAdminSummary();
+                checkCloudVersion();
             }
         }
 
