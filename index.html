@@ -307,7 +307,7 @@
             </div>
         </div>
 
-        <!-- 家長管理 Modal -->
+        <!-- 家長管理 Modal (編修修正) -->
         <div id="admin-modal" class="modal hidden">
             <div class="modal-content">
                 <h3 style="margin-top:0;">⚙️ 家長管理 - 題庫維護與同步</h3>
@@ -344,7 +344,12 @@
             { id: "phonics", name: "🔤 自然拼讀", desc: "CVC 短母音與發音發聲專向特訓" }
         ];
 
+        // 圖案對應字典 (補強句型人物對應：she/he/friend/who/where/how old)
         const emojiDictionary = {
+            "she": "👧", "who is she": "👧", "girl": "👧", "friend": "👧", "朋友": "👧",
+            "he": "👦", "who is he": "👦", "boy": "👦",
+            "who": "👤", "where": "🏡", "live": "🏡",
+            "how old": "🎂", "years old": "🎂", "happy": "😄", "fine": "😊",
             "搖晃": "🫨", "搖": "🫨", "shake": "🫨", "打滾": "🐕", "滾": "🐕", "roll": "🐕",
             "墊子": "🚪", "地墊": "🚪", "mat": "🚪", "坐下": "🪑", "坐": "🪑", "sit down": "🪑", "sit": "🪑",
             "站起來": "🚶", "站": "🚶", "stand up": "🚶", "stand": "🚶", "抓": "✊", "catch": "✊",
@@ -521,7 +526,6 @@
             let allVocab = [...builtinVocab, ...userVocab];
             let pool = allVocab.filter(v => v.category === currentUser.activeRoute);
 
-            // 🔤 自然拼讀：自動共享「生活單字」與「四季天氣」的所有單字進行拼讀訓練！
             if (currentUser.activeRoute === "phonics") {
                 pool = allVocab.filter(v => (v.category === "vocab" || v.category === "season" || v.category === "phonics") && !v.en.includes(" "));
             }
@@ -614,7 +618,7 @@
 
         function renderHintIcon(containerId, wordObj) {
             const container = document.getElementById(containerId);
-            const iconData = wordObj.icon || getAutoEmoji(wordObj.en, wordObj.zh);
+            const iconData = wordObj.icon || getAutoEmoji(wordObj.en, wordObj.zh || wordObj.prompt);
 
             if (iconData.startsWith('<img')) {
                 container.innerHTML = iconData;
@@ -1072,7 +1076,6 @@
             });
         }
 
-        // 重構分類映射：生活單字全部歸回 `vocab`，避免被自然拼讀分走！
         function parseGVizTableToPool(table, poolArray, defaultCategory) {
             if (!table || !table.rows) return;
 
@@ -1102,12 +1105,11 @@
                     zh = prompt;
                 }
 
-                // 精準分類歸流：vocab 頁籤的所有單字全數回歸 `vocab` 或 `season`
                 const rawCat = colE;
                 if (rawCat.includes("句型") || rawCat === "sentence") category = "sentence";
                 else if (rawCat.includes("天氣") || rawCat.includes("四季") || rawCat === "season") category = "season";
                 else if (rawCat.includes("數字") || rawCat.includes("顏色") || rawCat === "number") category = "number";
-                else category = "vocab"; // 預設 92 筆單字全數歸流至「生活單字」
+                else category = "vocab";
 
                 let options = null;
                 if (colD && colD.includes('/')) {
@@ -1159,7 +1161,7 @@
             });
         }
 
-        /* 渲染可點擊展開編修的後台題庫列表 (精準呈現分類題數) */
+        /* 渲染可點擊展開編修的後台題庫列表 */
         function renderAdminSummary() {
             const summaryList = document.getElementById('stat-summary-list');
             const allVocab = [...builtinVocab, ...userVocab];
@@ -1168,7 +1170,6 @@
             routes.forEach(r => {
                 let items = [];
                 if (r.id === "phonics") {
-                    // 自然拼讀：自動統計所有適合作發音練習的單字
                     items = allVocab.filter(item => (item.category === "vocab" || item.category === "season" || item.category === "phonics") && !item.en.includes(" "));
                 } else if (r.id === "number") {
                     items = generateNumberAndColorPool();
